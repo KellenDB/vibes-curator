@@ -1,0 +1,121 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+@keyframes gradient {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+.after\:animate-gradient::after {
+  animation: gradient 3s linear infinite;
+  background-size: 300% 100%;
+}
+
+@layer components {
+  .gleam {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(145deg, #000000, #171717);
+  }
+  
+  /* Primary sharp gleam */
+  .gleam::before {
+    content: '';
+    position: absolute;
+    top: -20%;
+    left: 0;
+    right: 0;
+    bottom: -20%;
+    background: linear-gradient(
+      70deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.08) 45%,
+      rgba(255, 255, 255, 0.3) 49%,
+      rgba(255, 255, 255, 0.55) 50%,
+      rgba(255, 255, 255, 0.3) 51%,
+      rgba(255, 255, 255, 0.08) 55%,
+      transparent 100%
+    );
+    transform: translateX(-100%) skewX(-20deg);
+  }
+  
+  /* Secondary softer gleam - faster speed */
+  .gleam::after {
+    content: '';
+    position: absolute;
+    top: -20%;
+    left: 0;
+    right: 0;
+    bottom: -20%;
+    background: linear-gradient(
+      70deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.05) 45%,
+      rgba(255, 255, 255, 0.2) 49%,
+      rgba(255, 255, 255, 0.3) 50%,
+      rgba(255, 255, 255, 0.2) 51%,
+      rgba(255, 255, 255, 0.05) 55%,
+      transparent 100%
+    );
+    transform: translateX(-100%) skewX(-20deg);
+  }
+
+  /* Add animations on hover */
+  .gleam:hover::before {
+    animation: shine1 2s infinite;
+    animation-timing-function: linear;
+  }
+
+  .gleam:hover::after {
+    animation: shine2 2s infinite;
+    animation-timing-function: linear;
+    animation-delay: 0.20s;
+  }
+  
+  @keyframes shine1 {
+    0% {
+      transform: translateX(-100%) skewX(-20deg);
+    }
+    40% {
+      transform: translateX(100%) skewX(-20deg);
+    }
+    100% {
+      transform: translateX(100%) skewX(-20deg);
+    }
+  }
+  
+  @keyframes shine2 {
+    0% {
+      transform: translateX(-100%) skewX(-20deg) scaleY(0.5);
+    }
+    20% { /* Faster movement (25% instead of 35%) to catch up */
+      transform: translateX(100%) skewX(-20deg) scaleY(1);
+    }
+    100% {
+      transform: translateX(100%) skewX(-20deg) scaleY(0.5);
+    }
+  }
+}
