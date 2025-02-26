@@ -10,7 +10,8 @@ export async function generateVibesWithClaude(product: string, direction: string
     console.log('Sending request to Claude...');
     
     const response = await anthropic.messages.create({
-      model: 'claude-3-opus-20240229',
+      //model: 'claude-3-opus-20240229',
+      model: 'claude-3-haiku-20240307',
       max_tokens: 4000,
       temperature: 0.9,
       messages: [{
@@ -76,47 +77,161 @@ Remember to return ONLY valid JSON with no additional text or formatting.`
     });
 
     console.log('Full Claude response:', JSON.stringify(response, null, 2));
+    console.log('Claude response received');
 
     if (!response.content || response.content.length === 0) {
       throw new Error('Empty response from Claude');
     }
 
     const contentBlock = response.content[0];
-    console.log('Content block:', contentBlock);
-
+    
     if (!contentBlock || !('text' in contentBlock)) {
       throw new Error('Invalid content block structure');
     }
 
     const textContent = contentBlock.text;
-    console.log('Text content:', textContent);
-
+    
     if (!textContent) {
       throw new Error('Empty text content from Claude');
     }
 
     try {
-      // Parse the response to validate JSON structure
-      const parsedResponse = JSON.parse(textContent);
-      return parsedResponse;
-    } catch (parseError) {
-      // If parsing fails, try to clean the string
-      const cleanContent = textContent
-        .replace(/\n/g, '\\n')  // Replace literal newlines with \n
-        .replace(/\r/g, '\\r')  // Replace carriage returns
-        .replace(/\t/g, '\\t'); // Replace tabs
-
+      // First try to find a valid JSON object in the text
+      const jsonMatch = textContent.match(/\{[\s\S]*\}/);
+      const jsonString = jsonMatch ? jsonMatch[0] : textContent;
+      
+      // Clean the JSON string: remove control characters and ensure proper escaping
+      const cleanJsonString = jsonString
+        .replace(/[\u0000-\u001F\u007F-\u009F]/g, '') // Remove control characters
+        .replace(/\\[rnt]/g, ' ') // Convert escaped whitespace to actual spaces
+        .replace(/\n/g, '\\n') // Properly escape newlines
+        .replace(/\r/g, '\\r') // Properly escape carriage returns
+        .replace(/\t/g, '\\t') // Properly escape tabs
+        .replace(/\\/g, '\\\\') // Double escape backslashes
+        .replace(/\\\\\"/g, '\\"') // Fix double-escaped quotes
+        .replace(/[^\x20-\x7E]/g, '') // Remove non-printable chars
+        .replace(/\\\\n/g, '\\n') // Fix over-escaped newlines
+        .replace(/\\\\r/g, '\\r') // Fix over-escaped carriage returns
+        .replace(/\\\\t/g, '\\t'); // Fix over-escaped tabs
+      
+      // Try to parse the cleaned JSON
       try {
-        const parsedResponse = JSON.parse(cleanContent);
-        return parsedResponse;
-      } catch (secondError) {
-        console.error('Error parsing Claude response:', secondError);
-        console.error('Failed content:', cleanContent);
-        throw new Error('Invalid response format from Claude');
+        return JSON.parse(cleanJsonString);
+      } catch (cleanError) {
+        console.error('Error parsing cleaned JSON string:', cleanError);
+        
+        // Try an alternative approach - rebuild the JSON manually
+        const manualJsonFix = manuallyFixJson(textContent);
+        return manualJsonFix;
+      }
+    } catch (parseError) {
+      console.error('Error parsing Claude response:', parseError);
+      
+      // Try one more fallback approach with basic fixes
+      try {
+        // Create a safety wrapper for JSON parsing
+        const safeJsonParse = (jsonString: string) => {
+          try {
+            return { result: JSON.parse(jsonString), error: null };
+          } catch (error) {
+            return { result: null, error };
+          }
+        };
+        
+        // Replace "smart" quotes with regular quotes
+        const simpleFixed = textContent
+          .replace(/[\u2018\u2019]/g, "'")
+          .replace(/[\u201C\u201D]/g, '"');
+          
+        const { result, error } = safeJsonParse(simpleFixed);
+        
+        if (result) return result;
+        
+        // If we're still here, we couldn't parse the JSON properly
+        throw new Error('Failed to parse AI response - please try again with a simpler request');
+      } catch (finalError) {
+        console.error('Final error parsing Claude response:', finalError);
+        throw new Error('Unable to parse the AI response. Please try again or modify your input.');
       }
     }
   } catch (error) {
     console.error('Error generating vibes with Claude:', error);
+    throw error;
+  }
+}
+
+// Helper function to check if we have enough valid JSON
+function manuallyFixJson(text: string) {
+  // Instead of trying to build a generic response, we'll throw an error
+  // to ensure transparency with the user
+  throw new Error('We encountered an issue processing the AI response. Please try again with a simpler description or different wording.');
+}
+
+// New function specifically for territory expansion
+export async function expandTerritory(territory: any, context: any, prompt: string) {
+  try {
+    console.log('Expanding territory with Claude...');
+    
+    const response = await anthropic.messages.create({
+      model: 'claude-3-haiku-20240307',
+      max_tokens: 4000,
+      temperature: 0.9,
+      messages: [{
+        role: 'user',
+        content: prompt
+      }],
+    });
+
+    console.log('Territory expansion response received');
+
+    if (!response.content || response.content.length === 0) {
+      throw new Error('Empty response from Claude');
+    }
+
+    const contentBlock = response.content[0];
+    
+    if (!contentBlock || !('text' in contentBlock)) {
+      throw new Error('Invalid content block structure');
+    }
+
+    const textContent = contentBlock.text;
+    
+    if (!textContent) {
+      throw new Error('Empty text content from Claude');
+    }
+
+    try {
+      // Same robust parsing as above
+      const jsonMatch = textContent.match(/\{[\s\S]*\}/);
+      const jsonString = jsonMatch ? jsonMatch[0] : textContent;
+      
+      const cleanJsonString = jsonString
+        .replace(/[\u0000-\u001F\u007F-\u009F]/g, '')
+        .replace(/\\[rnt]/g, ' ')
+        .replace(/\n/g, '\\n')
+        .replace(/\r/g, '\\r')
+        .replace(/\t/g, '\\t')
+        .replace(/\\/g, '\\\\')
+        .replace(/\\\\\"/g, '\\"')
+        .replace(/[^\x20-\x7E]/g, '')
+        .replace(/\\\\n/g, '\\n')
+        .replace(/\\\\r/g, '\\r')
+        .replace(/\\\\t/g, '\\t');
+      
+      try {
+        return JSON.parse(cleanJsonString);
+      } catch (cleanError) {
+        console.error('Error parsing cleaned expansion JSON:', cleanError);
+        
+        // Don't use a fallback, be transparent about the error
+        throw new Error('We encountered an issue processing the territory expansion. Please try again with a different approach or contact support.');
+      }
+    } catch (parseError) {
+      console.error('Error parsing territory expansion:', parseError);
+      throw new Error('We encountered an issue understanding the AI response. Please try again or modify your input.');
+    }
+  } catch (error) {
+    console.error('Error expanding territory with Claude:', error);
     throw error;
   }
 }

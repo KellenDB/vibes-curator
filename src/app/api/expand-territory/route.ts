@@ -1,50 +1,57 @@
 // src/app/api/expand-territory/route.ts
 import { NextResponse } from "next/server";
-import { generateVibesWithClaude } from "../../../utils/claude";
+import { generateVibesWithClaude, expandTerritory } from "../../../utils/claude";
 
 export async function POST(req: Request) {
   try {
-    const { territory, originalContext, userContext } = await req.json();
+    const { territory, originalContext, userContext, isUpdate } = await req.json();
 
+    // Construct a focused prompt for Claude
     const expansionPrompt = `Given this creative territory for ${originalContext.product}:
+    Territory: ${territory.territory}
+    Essence: ${territory['Mood & Tone']}
+    Original Approach: ${originalContext.approach?.intent || ''}
+    
+    ${userContext.focusArea ? `IMPORTANT Focus Area: ${userContext.focusArea}` : ''}
+    ${userContext.primaryChannel ? `IMPORTANT Primary Channel: ${userContext.primaryChannel}` : ''}
+    ${userContext.targetAudience ? `IMPORTANT Target Audience: ${userContext.targetAudience}` : ''}
+    
+    ${isUpdate ? 'This is an UPDATE request with new or refined context. Please revise your previous expansion to better align with the updated context above.' : ''}
+    
+    Provide a deep dive exploration of this territory that specifically addresses the focus areas, channels, and target audience mentioned above (if provided). Include:
+    - Visual World (aesthetics, inspiration, signature elements)
+    - Narrative Angles (stories, messaging, tone)
+    - Activation Opportunities (moments, platforms, community)
+    
+    Return as JSON with the following exact structure and no additional text:
+    
+    {
+      "visual_world": {
+        "aesthetics": ["Array of 3-5 key visual elements and principles"],
+        "inspiration": ["Array of 3-5 reference points or sources of inspiration"],
+        "signature_elements": ["Array of 3-5 unique visual identifiers"]
+      },
+      "narrative_angles": {
+        "key_stories": ["Array of 3-5 potential narrative threads to explore"],
+        "messaging_themes": ["Array of 3-5 core thematic messages"],
+        "tone_guidance": "One paragraph on capturing the right voice and tone"
+      },
+      "activation_opportunities": {
+        "key_moments": ["Array of 3-5 specific campaign moments or touchpoints"],
+        "platform_ideas": ["Array of 3-5 platform-specific opportunities"],
+        "engagement_hooks": ["Array of 3-5 ways to drive audience participation"]
+      },
+      "evolution_questions": ["Array of 4-6 thought-provoking questions to further develop this territory"]
+    }`;
 
-Territory: ${territory.territory}
-Original Intent: ${originalContext.approach.intent}
-Original Vibes: ${originalContext.vibes.join(', ')}
-
-${userContext.focusArea ? `Focus Area: ${userContext.focusArea}` : ''}
-${userContext.primaryChannel ? `Primary Channel: ${userContext.primaryChannel}` : ''}
-${userContext.targetAudience ? `Target Audience: ${userContext.targetAudience}` : ''}
-
-Provide a detailed expansion of this territory in exactly this JSON format (return ONLY the JSON):
-
-{
-  "territory_expansion": {
-    "visual_world": {
-      "aesthetics": ["Array of key visual elements/principles"],
-      "inspiration": ["Reference points/examples"],
-      "signature_elements": ["Unique visual identifiers"]
-    },
-    "narrative_angles": {
-      "key_stories": ["Potential narrative threads"],
-      "messaging_themes": ["Core messages to explore"],
-      "tone_guidance": "How to capture the voice"
-    },
-    "activation_opportunities": {
-      "key_moments": ["Specific campaign moments"],
-      "platform_ideas": ["Platform-specific opportunities"],
-      "engagement_hooks": ["Ways to drive participation"]
-    },
-    "evolution_questions": ["Additional questions for further exploration"]
-  }
-}`;
-
-    const expansion = await generateVibesWithClaude(
-      originalContext.product,
-      expansionPrompt,
-      originalContext.vibes.join(', ')
+    // Call Claude API using our dedicated expand territory function
+    const expansion = await expandTerritory(
+      territory,
+      originalContext,
+      expansionPrompt
     );
 
+    // Return the response
     return NextResponse.json({ expansion });
   } catch (error) {
     console.error("Error expanding territory:", error);
