@@ -1,36 +1,78 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# TARS: Your Partner in Vibes
 
-## Getting Started
+## What is TARS?
 
-First, run the development server:
+TARS is your creative companion for brand campaigns, marketing strategies, and creative direction. Think of it as having a seasoned creative director in your pocket, ready to help you explore and refine creative territories for your brand or product.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## What Does TARS Do?
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+TARS uses artificial intelligence to help you brainstorm and develop creative directions for your products or campaigns. It takes your inputs about a product and the vibes you're going for, then generates thoughtful creative approaches and territories to explore.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Key Features
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **Vibe Curation**: Input your product, campaign direction, and desired vibes to get curated creative responses
+- **Creative Territories**: Receive multiple unique creative directions to explore
+- **Deep Dive Exploration**: Select any territory for an in-depth exploration of visual elements, narrative angles, and activation opportunities
+- **Context Customization**: Tailor explorations with specific focus areas, channels, and target audiences
+- **Export Options**: Copy or download your creative briefs as markdown files
 
-## Learn More
+## How to Use TARS
 
-To learn more about Next.js, take a look at the following resources:
+### Step 1: Input Your Basic Info
+- **Product**: Enter the name of your product or brand
+- **Direction**: Specify what kind of campaign you're working on (digital campaign, rebrand, product launch, etc.)
+- **Vibes**: Add keywords that capture the feeling or aesthetic you're aiming for (e.g., "timeless," "swaggy," "nostalgic")
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Step 2: Generate Creative Directions
+- Click "Curate the vibes" to generate a creative response
+- TARS will provide you with:
+  - An **Approach** that includes refined vibes and strategic intent
+  - A **Brainstorm** that explores creative possibilities
+  - Multiple **Creative Territories** to consider
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Step 3: Explore a Territory
+- Click "Explore this territory" on any creative direction that resonates with you
+- Add optional context:
+  - **Focus Area**: Specific aspects you want to explore
+  - **Primary Channel**: Where the campaign will primarily live (Social, Digital, Experiential, etc.)
+  - **Target Audience**: Who you're trying to reach
 
-## Deploy on Vercel
+### Step 4: Deep Dive
+Once a territory is expanded, you'll get detailed insights into:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- **Visual World**:
+  - Aesthetics: Key visual elements and principles
+  - Inspiration: Reference points and sources
+  - Signature Elements: Unique visual identifiers
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Narrative Angles**:
+  - Key Stories: Potential narrative threads
+  - Messaging Themes: Core thematic messages
+  - Tone Guidance: Voice and tone recommendations
+
+- **Activation Opportunities**:
+  - Key Moments: Specific campaign touchpoints
+  - Platform Ideas: Channel-specific opportunities
+  - Engagement Hooks: Ways to drive audience participation
+
+- **Evolution Questions**: Thought-provoking questions to further develop the territory
+
+### Step 5: Save Your Work
+- Use the "Copy All" button to copy the entire exploration to your clipboard
+- Use the "Download MD" button to save the exploration as a markdown file
+
+## Tips for Getting the Best Results
+
+1. **Be Specific**: The more specific your initial inputs, the more targeted the output will be
+2. **Mix Unexpected Vibes**: Try combining contrasting or unexpected vibes for fresh directions
+3. **Iterate**: Use TARS's outputs as starting points for further exploration
+4. **Focus Context**: When doing a deep dive, narrow your focus area for more targeted insights
+5. **Save Multiple Directions**: Export several different territories to compare and combine ideas
+
+## Example Use Cases
+
+- **Brand Refresh**: Input your brand name, "rebrand" as direction, and vibes that represent where you want to take the brand
+- **Campaign Concepting**: Enter your product, "campaign" as direction, and vibes that capture the campaign feeling
+- **Social Strategy**: Specify your brand, "social content" as direction, add relevant vibes, and select "Social" as the primary channel during exploration
+
+TARS is designed to be a thought partner, not to replace human creativity. Use its outputs as inspiration and starting points for your own creative process!
