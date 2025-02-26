@@ -2,7 +2,7 @@ import { OpenAI } from "openai";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
-  model: "gpt-3.5-turbo",
+  //model: "gpt-3.5-turbo",
 });
 
 export async function generateVibesWithOpenAI(product: string, direction: string, vibes: string) {

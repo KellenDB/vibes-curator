@@ -31,16 +31,15 @@ Required response format:
   "Brainstorm": {
     "workthrough": "3-4 paragraphs exploring connected creative possibilities. Build insights that link different aspects naturally. How do we take the "vibes" and spin them into a unique take. Include specific ideas while leaving room for interpretation. Use paragraph breaks for flow."
   },
-  "Refined Concepts": [
-    {
-      "concept": "Concept name",
-      "Color Palette": ["color1", "color2", "color3"],
-      "color_exploration": "How colors work together with key question",
-      "Mood & Tone": "Emotional landscape with question",
-      "Textures & Styling": "Materials and elements with question",
-      "Settings": "Environment descriptions with question"
-    }
   ]
+    "Creative_Territories": [
+    {
+      "territory": "Name/identifier for this direction",
+      "Mood & Tone": "Emotional landscape and feel, could include light directional elements like colors, textures, etc. but not necessarily",
+      "Unique_Angles": ["Cultural relevance/connections, timely trends/zeitgeist, and/or differentiators that make this direction special/unique"],
+      "Key_Questions": [
+        "Multiple thought-provoking questions tied back to the territory, mood/tone, and/or unique angles to explore that will help set this direction apart"
+      ]
 }
 
 Style and content guidance:
