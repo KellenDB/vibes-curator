@@ -1,7 +1,8 @@
 // src/components/CreativeResponse.tsx
 import React, { useState, useEffect } from 'react';
-import { ChevronDown, ChevronUp } from 'lucide-react';
-import Button from './Button';
+import { ChevronDown, ChevronUp, Sparkles } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import TerritoryCard from './TerritoryCard';
 import { Territory } from '../types';
 
 interface CreativeResponseType {
@@ -18,7 +19,7 @@ interface CreativeResponseType {
 interface CreativeResponseProps {
   response: any;
   onTerritorySelect?: (territory: Territory) => void;
-  compactMode?: boolean; // New prop for split view
+  compactMode?: boolean;
 }
 
 const CreativeResponse: React.FC<CreativeResponseProps> = ({ 
@@ -34,7 +35,9 @@ const CreativeResponse: React.FC<CreativeResponseProps> = ({
 
   useEffect(() => {
     try {
+      console.log("Response to parse:", response);
       const parsed = typeof response === 'string' ? JSON.parse(response) : response;
+      console.log("Parsed response:", parsed);
       setParsedResponse(parsed);
     } catch (error) {
       console.error('Error parsing response:', error);
@@ -57,24 +60,65 @@ const CreativeResponse: React.FC<CreativeResponseProps> = ({
   }
 
   const handleTerritorySelect = (territory: Territory) => {
-    setSelectedTerritoryId(territory.territory);
+    // Only mark as selected if it's not already selected (toggling behavior)
+    const newSelectedId = selectedTerritoryId === territory.territory ? null : territory.territory;
+    setSelectedTerritoryId(newSelectedId);
+    
     if (onTerritorySelect) {
       onTerritorySelect(territory);
     }
   };
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      transition: {
+        type: "spring",
+        stiffness: 300,
+        damping: 24
+      }
+    }
+  };
+
   return (
-    <div className={`w-full mx-auto ${compactMode ? 'px-2 py-4' : 'px-4 py-8'} bg-[#f8f7f4]`}>
+    <motion.div 
+      className={`w-full mx-auto ${compactMode ? 'px-2 py-4' : 'px-4 py-8'} bg-texture`}
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+    >
       <div className="space-y-6">
-        {/* Approach Section - Show in both modes but with different styling */}
-        <div className="bg-white rounded-lg shadow-md border border-gray-100">
-          <div className={`border-b border-gray-100 ${compactMode ? 'px-4 py-3' : 'px-8 py-6'}`}>
-            <h2 className={`${compactMode ? 'text-xl' : 'text-3xl'} font-light tracking-tight text-gray-900`}>Approach</h2>
+        {/* Approach Section */}
+        <motion.div 
+          className="card bg-card"
+          variants={itemVariants}
+        >
+          <div className={`border-b border-border ${compactMode ? 'px-4 py-3' : 'px-8 py-6'}`}>
+            <div className="flex items-center">
+              <Sparkles className="w-5 h-5 text-secondary mr-2" />
+              <h2 className={`${compactMode ? 'text-xl' : 'text-2xl'} font-medium tracking-tight text-card-foreground`}>
+                Approach
+              </h2>
+            </div>
           </div>
           <div className={`${compactMode ? 'px-4 py-3' : 'px-8 py-6'} space-y-4`}>
             {parsedResponse.Approach?.vibes?.length > 0 && (
               <div>
-                <h3 className="text-sm uppercase tracking-wider text-gray-500 mb-2">Vibes</h3>
+                <h3 className="text-sm uppercase tracking-wider text-gray-500 font-medium mb-3">
+                  Vibes
+                </h3>
                 <div className="flex flex-wrap gap-2">
                   {parsedResponse.Approach.vibes.map((vibe, index) => (
                     <span 
@@ -89,7 +133,9 @@ const CreativeResponse: React.FC<CreativeResponseProps> = ({
             )}
             {parsedResponse.Approach?.intent && (
               <div>
-                <h3 className="text-sm uppercase tracking-wider text-gray-500 mb-2">Intent</h3>
+                <h3 className="text-sm uppercase tracking-wider text-gray-500 font-medium mb-3">
+                  Intent
+                </h3>
                 <p className={`text-gray-700 leading-relaxed ${compactMode ? 'text-sm' : ''}`}>
                   {compactMode && !showFullIntent
                     ? parsedResponse.Approach.intent.length > 150
@@ -100,7 +146,7 @@ const CreativeResponse: React.FC<CreativeResponseProps> = ({
                 </p>
                 {compactMode && parsedResponse.Approach.intent.length > 150 && !showFullIntent && (
                   <button 
-                    className="text-blue-600 text-sm mt-1 hover:underline"
+                    className="text-primary text-sm mt-1 hover:underline focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded"
                     onClick={() => setShowFullIntent(true)}
                   >
                     Read more
@@ -108,7 +154,7 @@ const CreativeResponse: React.FC<CreativeResponseProps> = ({
                 )}
                 {compactMode && showFullIntent && (
                   <button 
-                    className="text-blue-600 text-sm mt-1 hover:underline"
+                    className="text-primary text-sm mt-1 hover:underline focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded"
                     onClick={() => setShowFullIntent(false)}
                   >
                     Show less
@@ -117,13 +163,18 @@ const CreativeResponse: React.FC<CreativeResponseProps> = ({
               </div>
             )}
           </div>
-        </div>
+        </motion.div>
 
-        {/* Brainstorm Section - Show in both modes but condense in compact mode */}
+        {/* Brainstorm Section */}
         {parsedResponse.Brainstorm?.workthrough && (
-          <div className="bg-white rounded-lg shadow-md border border-gray-100">
-            <div className={`border-b border-gray-100 ${compactMode ? 'px-4 py-3' : 'px-8 py-6'}`}>
-              <h2 className={`${compactMode ? 'text-xl' : 'text-3xl'} font-light tracking-tight text-gray-900`}>Brainstorm</h2>
+          <motion.div 
+            className="card bg-card"
+            variants={itemVariants}
+          >
+            <div className={`border-b border-border ${compactMode ? 'px-4 py-3' : 'px-8 py-6'}`}>
+              <h2 className={`${compactMode ? 'text-xl' : 'text-2xl'} font-medium tracking-tight text-card-foreground`}>
+                Brainstorm
+              </h2>
             </div>
             <div className={`${compactMode ? 'px-4 py-3' : 'px-8 py-6'}`}>
               <p className={`text-gray-700 leading-relaxed ${compactMode ? 'text-sm' : ''} whitespace-pre-wrap`}>
@@ -134,7 +185,7 @@ const CreativeResponse: React.FC<CreativeResponseProps> = ({
               </p>
               {compactMode && !showFullBrainstorm && (
                 <button 
-                  className="text-blue-600 text-sm mt-2 hover:underline"
+                  className="text-primary text-sm mt-2 hover:underline focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded"
                   onClick={() => setShowFullBrainstorm(true)}
                 >
                   View full brainstorm
@@ -142,24 +193,27 @@ const CreativeResponse: React.FC<CreativeResponseProps> = ({
               )}
               {compactMode && showFullBrainstorm && (
                 <button 
-                  className="text-blue-600 text-sm mt-2 hover:underline"
+                  className="text-primary text-sm mt-2 hover:underline focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded"
                   onClick={() => setShowFullBrainstorm(false)}
                 >
                   Show less
                 </button>
               )}
             </div>
-          </div>
+          </motion.div>
         )}
         
         {/* Creative Territories Section */}
         {parsedResponse.Creative_Territories?.length > 0 && (
-          <div className="bg-white rounded-lg shadow-md border border-gray-100">
+          <motion.div 
+            className="card bg-card"
+            variants={itemVariants}
+          >
             <button
               onClick={() => setShowTerritories(!showTerritories)}
-              className={`w-full flex items-center justify-between ${compactMode ? 'px-4 py-3' : 'px-8 py-6'} border-b border-gray-100 hover:bg-gray-50 transition-colors`}
+              className={`w-full flex items-center justify-between ${compactMode ? 'px-4 py-3' : 'px-8 py-6'} border-b border-border hover:bg-gray-50 transition-colors`}
             >
-              <h2 className={`${compactMode ? 'text-xl' : 'text-3xl'} font-light tracking-tight text-gray-900`}>
+              <h2 className={`${compactMode ? 'text-xl' : 'text-2xl'} font-medium tracking-tight text-card-foreground`}>
                 Creative Territories
               </h2>
               {showTerritories ? (
@@ -169,83 +223,33 @@ const CreativeResponse: React.FC<CreativeResponseProps> = ({
               )}
             </button>
             
-            {showTerritories && (
-              <div className={`${compactMode ? 'px-4 py-3' : 'px-8 py-6'} space-y-6`}>
-                {parsedResponse.Creative_Territories.map((territory, index) => (
-                  <div 
-                    key={index}
-                    className={`p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer ${selectedTerritoryId === territory.territory ? 'ring-2 ring-black' : ''}`}
-                    onClick={() => handleTerritorySelect(territory)}
-                  >
-                    {/* Territory Title */}
-                    <h3 className={`${compactMode ? 'text-lg' : 'text-2xl'} font-medium text-gray-900 mb-4 pb-2 border-b border-gray-200`}>
-                      {territory.territory}
-                    </h3>
-                    
-                    <div className={`space-y-4 ${compactMode ? 'text-sm' : ''}`}>
-                      {/* Mood & Tone Section - Show in all modes */}
-                      <div className="bg-white rounded-lg p-4">
-                        <h4 className="text-sm font-medium text-gray-400 mb-2">
-                          MOOD & TONE
-                        </h4>
-                        <p className="text-gray-800 leading-relaxed">
-                          {territory['Mood & Tone']}
-                        </p>
-                      </div>
-
-                      {/* Unique Angles Section - Hide in compact mode */}
-                      {!compactMode && (
-                        <div className="bg-white rounded-lg p-4">
-                          <h4 className="text-sm font-medium text-gray-400 mb-3">
-                            UNIQUE ANGLES
-                          </h4>
-                          <ul className="list-disc pl-4 space-y-2">
-                            {territory.Unique_Angles.map((angle, i) => (
-                              <li key={i} className="text-gray-800 leading-relaxed">
-                                {angle}
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-
-                      {/* Key Questions Section - Hide in compact mode */}
-                      {!compactMode && (
-                        <div className="bg-white rounded-lg p-4">
-                          <h4 className="text-sm font-medium text-gray-400 mb-3">
-                            KEY QUESTIONS
-                          </h4>
-                          <ul className="list-disc pl-4 space-y-2">
-                            {territory.Key_Questions.map((question, i) => (
-                              <li key={i} className="text-gray-800 leading-relaxed">
-                                {question}
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className={`${compactMode ? 'mt-4' : 'mt-6'} group flex items-center text-blue-600 hover:text-blue-700 font-medium`}>
-                      <button 
-                        className="inline-flex items-center text-blue-600 hover:text-blue-800"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleTerritorySelect(territory);
-                        }}
-                      >
-                        {selectedTerritoryId === territory.territory ? 'Currently exploring' : 'Explore this territory'}
-                        <span className="ml-1 transition-transform group-hover:translate-x-1">→</span>
-                      </button>
-                    </div>
+            <AnimatePresence mode="wait">
+              {showTerritories && (
+                <motion.div 
+                  className={`${compactMode ? 'px-4 py-3' : 'px-8 py-6'}`}
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <div className="space-y-6">
+                    {parsedResponse.Creative_Territories.map((territory, index) => (
+                      <TerritoryCard
+                        key={territory.territory}
+                        territory={territory}
+                        isSelected={selectedTerritoryId === territory.territory}
+                        onSelect={() => handleTerritorySelect(territory)}
+                        index={index}
+                      />
+                    ))}
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 };
 

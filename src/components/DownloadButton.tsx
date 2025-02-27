@@ -1,17 +1,20 @@
 // src/components/DownloadButton.tsx
 import React from 'react';
 import { Download } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 interface DownloadButtonProps {
   content: string;
   filename: string;
   label?: string;
+  className?: string;
 }
 
 const DownloadButton: React.FC<DownloadButtonProps> = ({ 
   content, 
   filename, 
-  label = "Download" 
+  label = "Download",
+  className = ""
 }) => {
   const handleDownload = () => {
     const blob = new Blob([content], { type: 'text/markdown' });
@@ -26,14 +29,18 @@ const DownloadButton: React.FC<DownloadButtonProps> = ({
   };
 
   return (
-    <button
+    <motion.button
       onClick={handleDownload}
-      className="inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-md 
-                bg-gray-800 text-white hover:bg-gray-700 transition-colors"
+      className={`inline-flex items-center px-3 py-2 text-sm font-medium rounded-md
+                 bg-primary text-white hover:bg-primary/90
+                 transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2
+                 ${className}`}
+      whileHover={{ scale: 1.03 }}
+      whileTap={{ scale: 0.97 }}
     >
       <Download className="w-4 h-4 mr-1.5" />
       {label}
-    </button>
+    </motion.button>
   );
 };
 

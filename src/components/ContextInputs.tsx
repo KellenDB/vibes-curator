@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import Button from './Button';
 import { UserContext } from '../types';
+import { motion } from 'framer-motion';
 
 interface ContextInputsProps {
   onSubmit: (context: UserContext) => void;
@@ -28,31 +29,69 @@ const ContextInputs: React.FC<ContextInputsProps> = ({
       targetAudience: audience || undefined
     });
   };
+  
+  const handleCancel = () => {
+    // Just call the passed-in cancel function without expecting an event
+    onCancel();
+  };
+
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 10 },
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      transition: {
+        type: "spring",
+        stiffness: 300,
+        damping: 24
+      }
+    }
+  };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 max-w-lg mx-auto">
-      <div className="space-y-4 bg-gray-50 p-4 rounded-md">
-        <h3 className="text-lg font-medium">Add Context (Optional)</h3>
+    <motion.form 
+      onSubmit={handleSubmit} 
+      className="space-y-6 max-w-lg mx-auto"
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+    >
+      <motion.div 
+        className="space-y-6 bg-gray-50/70 p-6 rounded-lg shadow-sm border border-border"
+        variants={itemVariants}
+      >
+        <h3 className="text-lg font-medium text-gray-800">Add Context (Optional)</h3>
         
-        <div>
-          <label className="block text-sm text-gray-600 mb-1">
+        <motion.div variants={itemVariants}>
+          <label className="block text-sm text-gray-600 font-medium mb-2">
             Specific Focus Areas
           </label>
           <input
             type="text"
-            className="w-full p-2 border rounded"
+            className="w-full p-3 border border-border rounded-md focus:ring-2 focus:ring-ring focus:border-primary transition-colors"
             placeholder="Any specific aspects to explore?"
             value={focusArea}
             onChange={(e) => setFocusArea(e.target.value)}
           />
-        </div>
+        </motion.div>
 
-        <div>
-          <label className="block text-sm text-gray-600 mb-1">
+        <motion.div variants={itemVariants}>
+          <label className="block text-sm text-gray-600 font-medium mb-2">
             Primary Channel
           </label>
           <select
-            className="w-full p-2 border rounded"
+            className="w-full p-3 border border-border rounded-md focus:ring-2 focus:ring-ring focus:border-primary transition-colors bg-white"
             value={channel}
             onChange={(e) => setChannel(e.target.value)}
           >
@@ -62,40 +101,43 @@ const ContextInputs: React.FC<ContextInputsProps> = ({
             <option value="Experiential">Experiential</option>
             <option value="Integrated">Integrated</option>
           </select>
-        </div>
+        </motion.div>
 
-        <div>
-          <label className="block text-sm text-gray-600 mb-1">
+        <motion.div variants={itemVariants}>
+          <label className="block text-sm text-gray-600 font-medium mb-2">
             Target Audience Details
           </label>
           <input
             type="text"
-            className="w-full p-2 border rounded"
+            className="w-full p-3 border border-border rounded-md focus:ring-2 focus:ring-ring focus:border-primary transition-colors"
             placeholder="Any specific audience context?"
             value={audience}
             onChange={(e) => setAudience(e.target.value)}
           />
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
 
-      <div className="flex justify-end space-x-4 pt-4">
-        <button
-          type="button"
-          onClick={onCancel}
-          className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+      <motion.div 
+        className="flex justify-end space-x-4 pt-2"
+        variants={itemVariants}
+      >
+        <Button
+          variant="outline"
+          size="default"
+          onClick={handleCancel}
           disabled={isLoading}
-        >
-          Cancel
-        </button>
-        <button
+          text="Cancel"
+          type="button" // Important: not a submit button
+        />
+        <Button
+          variant="gradient"
+          size="default"
           type="submit"
-          className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black"
           disabled={isLoading}
-        >
-          {isLoading ? 'Loading...' : 'Deep Dive'}
-        </button>
-      </div>
-    </form>
+          text={isLoading ? 'Loading...' : 'Deep Dive'}
+        />
+      </motion.div>
+    </motion.form>
   );
 };
 
