@@ -1,5 +1,5 @@
 // src/components/TerritoryDetails.tsx
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { 
   Territory, 
   TerritoryExpansionResponse, 
@@ -11,7 +11,23 @@ import DownloadButton from './DownloadButton';
 import ErrorMessage from './ErrorMessage';
 import SuccessMessage from './SuccessMessage';
 import LoadingSpinner from './LoadingSpinner';
-import { RefreshCw, Settings } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  RefreshCw, 
+  Settings, 
+  ChevronDown, 
+  ChevronUp, 
+  Sparkles, 
+  ArrowRight, 
+  Eye, 
+  MessageCircle, 
+  Lightbulb, 
+  Palette,
+  LayoutGrid,
+  Users,
+  BookOpen,
+  HelpCircle
+} from 'lucide-react';
 
 interface TerritoryDetailsProps {
   territory: Territory;
@@ -43,6 +59,45 @@ const TerritoryDetails: React.FC<TerritoryDetailsProps> = ({
 }) => {
   const [showContextForm, setShowContextForm] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [expandedSections, setExpandedSections] = useState({
+    visualWorld: true,
+    narrativeAngles: true,
+    activationOpportunities: true,
+    evolutionQuestions: true
+  });
+  
+  // Generate dynamic colors based on territory name (similar to TerritoryCard)
+  const colors = useMemo(() => {
+    const getGradient = (str: string) => {
+      // Simple hash function to get a number from string
+      const hash = str.split('').reduce((acc, char) => {
+        return char.charCodeAt(0) + ((acc << 5) - acc);
+      }, 0);
+      
+      // Use the hash to generate hue values (keep in warm or cool tones)
+      const baseHue = Math.abs(hash % 360);
+      const hue1 = (baseHue % 180) + (baseHue > 180 ? 0 : 180); // 0-179 or 180-359
+      const hue2 = (hue1 + 30) % 360;
+      
+      return {
+        main: `hsla(${hue1}, 80%, 50%, 0.05)`,
+        accent: `hsla(${hue2}, 90%, 60%, 0.8)`,
+        highlight: `hsla(${hue1}, 95%, 60%, 0.1)`,
+        gradientStart: `hsla(${hue1}, 80%, 50%, 1)`,
+        gradientEnd: `hsla(${hue2}, 90%, 60%, 1)`
+      };
+    };
+    
+    return getGradient(territory.territory);
+  }, [territory.territory]);
+  
+  // Function to toggle section expansion
+  const toggleSection = (section: keyof typeof expandedSections) => {
+    setExpandedSections(prev => ({
+      ...prev,
+      [section]: !prev[section]
+    }));
+  };
   
   // Function to handle updating territory with new context
   const handleContextUpdate = async (newContext: UserContext) => {
@@ -131,12 +186,49 @@ const TerritoryDetails: React.FC<TerritoryDetailsProps> = ({
     return content;
   };
 
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 10 },
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      transition: {
+        type: "spring",
+        stiffness: 300,
+        damping: 24
+      }
+    }
+  };
+
+  const contentVariants = {
+    hidden: { opacity: 0, height: 0 },
+    visible: { 
+      opacity: 1, 
+      height: "auto",
+      transition: {
+        type: "spring",
+        stiffness: 300,
+        damping: 26,
+        duration: 0.3
+      }
+    }
+  };
+
   // If loading and no expansion data yet, show spinner
   if (isLoading && !expansionData) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[300px]">
-        <LoadingSpinner />
-        <p className="mt-4 text-gray-500">Generating territory expansion...</p>
+        <LoadingSpinner text="Generating territory expansion..." />
       </div>
     );
   }
@@ -149,8 +241,19 @@ const TerritoryDetails: React.FC<TerritoryDetailsProps> = ({
   // If no expansion data yet, show a placeholder
   if (!expansionData) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[300px]">
-        <p className="text-gray-500">Waiting for territory expansion...</p>
+      <div className="flex flex-col items-center justify-center min-h-[300px] p-8 text-center">
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="text-gray-500 space-y-4"
+        >
+          <Sparkles className="w-12 h-12 text-secondary mx-auto opacity-50" />
+          <p className="text-xl font-medium">Waiting for territory expansion...</p>
+          <p className="text-gray-400 max-w-md mx-auto">
+            When you're ready, click "Explore this territory" to generate a detailed 
+            expansion with visual elements, narrative angles, and activation ideas.
+          </p>
+        </motion.div>
       </div>
     );
   }
@@ -159,238 +262,482 @@ const TerritoryDetails: React.FC<TerritoryDetailsProps> = ({
   const userContext = expansionData.userContext;
 
   return (
-    <div className="space-y-8">
+    <motion.div 
+      className="space-y-8"
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+    >
       {/* Territory overview and context */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
-        <h2 className="text-2xl font-semibold mb-2">{territory.territory}</h2>
-        <p className="text-gray-700 mb-4">{territory['Mood & Tone']}</p>
+      <motion.div 
+        className="bg-card rounded-lg shadow-sm border border-border overflow-hidden"
+        variants={itemVariants}
+        style={{
+          background: `linear-gradient(135deg, ${colors.main}, white)`
+        }}
+      >
+        {/* Accent bar */}
+        <div 
+          className="h-1 w-full"
+          style={{ 
+            background: `linear-gradient(to right, ${colors.accent}, transparent 80%)`
+          }}
+        />
         
-        {/* Context badge section */}
-        <div className="flex justify-between items-start">
-          <div>
-            <h3 className="text-sm uppercase tracking-wider text-gray-500 mb-2">Applied Context</h3>
-            <div className="flex flex-wrap gap-2">
-              {userContext?.focusArea ? (
-                <div className="bg-gray-100 px-3 py-1 rounded-full text-sm">
-                  <span className="font-medium">Focus:</span> {userContext.focusArea}
-                </div>
-              ) : null}
-              
-              {userContext?.primaryChannel ? (
-                <div className="bg-gray-100 px-3 py-1 rounded-full text-sm">
-                  <span className="font-medium">Channel:</span> {userContext.primaryChannel}
-                </div>
-              ) : null}
-              
-              {userContext?.targetAudience ? (
-                <div className="bg-gray-100 px-3 py-1 rounded-full text-sm">
-                  <span className="font-medium">Audience:</span> {userContext.targetAudience}
-                </div>
-              ) : null}
-              
-              {!userContext?.focusArea && !userContext?.primaryChannel && !userContext?.targetAudience && (
-                <div className="text-gray-500 text-sm italic">No additional context applied</div>
-              )}
-            </div>
+        <div className="p-6 relative">
+          <div className="mb-4">
+            <h2 className="text-2xl font-semibold tracking-tight">{territory.territory}</h2>
+            <p className="text-gray-700 mt-2">{territory['Mood & Tone']}</p>
           </div>
           
-          <button
-            onClick={() => setShowContextForm(!showContextForm)}
-            className="inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-          >
-            {showContextForm ? (
-              <>Hide Context Form</>
-            ) : (
-              <>
-                <Settings className="w-4 h-4 mr-1.5" />
-                Update Context
-              </>
-            )}
-          </button>
-        </div>
-        
-        {/* Success Message */}
-        {successMessage && (
-          <div className="mt-4">
-            <SuccessMessage message={successMessage} onDismiss={() => setSuccessMessage(null)} />
-          </div>
-        )}
-        
-        {/* Error Message */}
-        {error && (
-          <div className="mt-4">
-            <ErrorMessage message={error} />
-          </div>
-        )}
-        
-        {/* Context update form */}
-        {showContextForm && (
-          <div className="mt-6 border-t border-gray-200 pt-4">
-            <h3 className="text-lg font-medium mb-4">Update Context</h3>
-            <div className="max-w-lg mx-auto">
-              <ContextInputs
-                onSubmit={handleContextUpdate}
-                onCancel={() => setShowContextForm(false)}
-                isLoading={isLoading}
-                initialContext={userContext}
-              />
+          {/* Context badge section */}
+          <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
+            <div>
+              <h3 className="text-sm uppercase tracking-wider text-gray-500 mb-2">Applied Context</h3>
+              <div className="flex flex-wrap gap-2">
+                {userContext?.focusArea ? (
+                  <div className="px-3 py-1 rounded-full text-sm bg-background border border-border">
+                    <span className="font-medium">Focus:</span> {userContext.focusArea}
+                  </div>
+                ) : null}
+                
+                {userContext?.primaryChannel ? (
+                  <div className="px-3 py-1 rounded-full text-sm bg-background border border-border">
+                    <span className="font-medium">Channel:</span> {userContext.primaryChannel}
+                  </div>
+                ) : null}
+                
+                {userContext?.targetAudience ? (
+                  <div className="px-3 py-1 rounded-full text-sm bg-background border border-border">
+                    <span className="font-medium">Audience:</span> {userContext.targetAudience}
+                  </div>
+                ) : null}
+                
+                {!userContext?.focusArea && !userContext?.primaryChannel && !userContext?.targetAudience && (
+                  <div className="text-gray-500 text-sm italic">No additional context applied</div>
+                )}
+              </div>
             </div>
+            
+            <motion.button
+              onClick={() => setShowContextForm(!showContextForm)}
+              className="inline-flex items-center px-4 py-2 border border-border shadow-sm text-sm font-medium rounded-full 
+                        bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-colors"
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+            >
+              {showContextForm ? (
+                <>Hide Context Form</>
+              ) : (
+                <>
+                  <Settings className="w-4 h-4 mr-1.5" />
+                  Update Context
+                </>
+              )}
+            </motion.button>
           </div>
-        )}
-        
-        {/* Export options */}
-        <div className="mt-6 flex justify-end space-x-4">
-          <CopyButton 
-            text={prepareCopyContent()} 
-            label="Copy All" 
-          />
-          <DownloadButton 
-            content={prepareCopyContent()}
-            filename={`${territory.territory.toLowerCase().replace(/\s+/g, '-')}-expansion.md`}
-            label="Download MD"
+          
+          {/* Success Message */}
+          <AnimatePresence>
+            {successMessage && (
+              <motion.div 
+                className="mt-4"
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+              >
+                <SuccessMessage message={successMessage} onDismiss={() => setSuccessMessage(null)} />
+              </motion.div>
+            )}
+          </AnimatePresence>
+          
+          {/* Error Message */}
+          <AnimatePresence>
+            {error && (
+              <motion.div 
+                className="mt-4"
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+              >
+                <ErrorMessage message={error} />
+              </motion.div>
+            )}
+          </AnimatePresence>
+          
+          {/* Context update form */}
+          <AnimatePresence>
+            {showContextForm && (
+              <motion.div 
+                className="mt-6 border-t border-border pt-4"
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+              >
+                <h3 className="text-lg font-medium mb-4">Update Context</h3>
+                <div className="max-w-lg mx-auto">
+                  <ContextInputs
+                    onSubmit={handleContextUpdate}
+                    onCancel={() => setShowContextForm(false)}
+                    isLoading={isLoading}
+                    initialContext={userContext}
+                  />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+          
+          {/* Export options */}
+          <div className="mt-6 flex justify-end space-x-4">
+            <CopyButton 
+              text={prepareCopyContent()} 
+              label="Copy All" 
+            />
+            <DownloadButton 
+              content={prepareCopyContent()}
+              filename={`${territory.territory.toLowerCase().replace(/\s+/g, '-')}-expansion.md`}
+              label="Download MD"
+            />
+          </div>
+          
+          {/* Visual decoration element */}
+          <div
+            className="absolute -bottom-12 -right-12 w-36 h-36 rounded-full opacity-15"
+            style={{ 
+              background: `radial-gradient(circle, ${colors.accent} 0%, transparent 70%)`
+            }}
           />
         </div>
-      </div>
+      </motion.div>
       
       {/* Loading overlay */}
-      {isLoading && (
-        <div className="fixed inset-0 bg-white/70 flex items-center justify-center z-10">
-          <div className="text-center">
-            <LoadingSpinner />
-            <p className="mt-4 text-gray-600">Updating territory expansion...</p>
-          </div>
-        </div>
-      )}
+      <AnimatePresence>
+        {isLoading && (
+          <motion.div 
+            className="fixed inset-0 bg-white/70 backdrop-blur-sm flex items-center justify-center z-10"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <div className="text-center">
+              <LoadingSpinner text="Updating territory expansion..." />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
       
       {/* Visual World Section */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
-        <h2 className="text-xl font-semibold mb-6 pb-2 border-b border-gray-100">Visual World</h2>
+      <motion.div 
+        className="bg-card rounded-lg shadow-sm border border-border overflow-hidden"
+        variants={itemVariants}
+      >
+        <button 
+          onClick={() => toggleSection('visualWorld')}
+          className="w-full flex items-center justify-between p-6 border-b border-border hover:bg-gray-50/50 transition-colors"
+        >
+          <div className="flex items-center">
+            <Palette className="w-5 h-5 text-secondary mr-3" />
+            <h2 className="text-xl font-semibold tracking-tight text-card-foreground">Visual World</h2>
+          </div>
+          {expandedSections.visualWorld ? (
+            <ChevronUp className="w-5 h-5 text-gray-400" />
+          ) : (
+            <ChevronDown className="w-5 h-5 text-gray-400" />
+          )}
+        </button>
         
-        <div className="space-y-8">
-          <div>
-            <h3 className="text-md font-medium text-gray-800 mb-3">Aesthetics</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {expansion.visual_world.aesthetics.map((item, i) => (
-                <div key={i} className="p-4 bg-gray-50 rounded-md">
-                  {item}
+        <AnimatePresence>
+          {expandedSections.visualWorld && (
+            <motion.div 
+              className="p-6 space-y-8"
+              variants={contentVariants}
+              initial="hidden"
+              animate="visible"
+              exit="hidden"
+            >
+              <div>
+                <h3 className="text-md font-medium text-gray-800 mb-3 flex items-center">
+                  <Eye className="w-4 h-4 mr-2 text-secondary opacity-80" />
+                  Aesthetics
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {expansion.visual_world.aesthetics.map((item, i) => (
+                    <motion.div 
+                      key={i} 
+                      className="p-4 bg-background rounded-lg border border-border shadow-sm"
+                      whileHover={{ y: -2, boxShadow: "0 4px 12px rgba(0, 0, 0, 0.05)" }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      {item}
+                    </motion.div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </div>
-          
-          <div>
-            <h3 className="text-md font-medium text-gray-800 mb-3">Inspiration</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {expansion.visual_world.inspiration.map((item, i) => (
-                <div key={i} className="p-4 bg-gray-50 rounded-md">
-                  {item}
+              </div>
+              
+              <div>
+                <h3 className="text-md font-medium text-gray-800 mb-3 flex items-center">
+                  <Sparkles className="w-4 h-4 mr-2 text-secondary opacity-80" />
+                  Inspiration
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {expansion.visual_world.inspiration.map((item, i) => (
+                    <motion.div 
+                      key={i} 
+                      className="p-4 bg-background rounded-lg border border-border shadow-sm"
+                      whileHover={{ y: -2, boxShadow: "0 4px 12px rgba(0, 0, 0, 0.05)" }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      {item}
+                    </motion.div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </div>
-          
-          <div>
-            <h3 className="text-md font-medium text-gray-800 mb-3">Signature Elements</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {expansion.visual_world.signature_elements.map((item, i) => (
-                <div key={i} className="p-4 bg-gray-50 rounded-md">
-                  {item}
+              </div>
+              
+              <div>
+                <h3 className="text-md font-medium text-gray-800 mb-3 flex items-center">
+                  <LayoutGrid className="w-4 h-4 mr-2 text-secondary opacity-80" />
+                  Signature Elements
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {expansion.visual_world.signature_elements.map((item, i) => (
+                    <motion.div 
+                      key={i} 
+                      className="p-4 bg-background rounded-lg border border-border shadow-sm"
+                      whileHover={{ y: -2, boxShadow: "0 4px 12px rgba(0, 0, 0, 0.05)" }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      {item}
+                    </motion.div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
       
       {/* Narrative Angles Section */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
-        <h2 className="text-xl font-semibold mb-6 pb-2 border-b border-gray-100">Narrative Angles</h2>
+      <motion.div 
+        className="bg-card rounded-lg shadow-sm border border-border overflow-hidden"
+        variants={itemVariants}
+      >
+        <button 
+          onClick={() => toggleSection('narrativeAngles')}
+          className="w-full flex items-center justify-between p-6 border-b border-border hover:bg-gray-50/50 transition-colors"
+        >
+          <div className="flex items-center">
+            <BookOpen className="w-5 h-5 text-secondary mr-3" />
+            <h2 className="text-xl font-semibold tracking-tight text-card-foreground">Narrative Angles</h2>
+          </div>
+          {expandedSections.narrativeAngles ? (
+            <ChevronUp className="w-5 h-5 text-gray-400" />
+          ) : (
+            <ChevronDown className="w-5 h-5 text-gray-400" />
+          )}
+        </button>
         
-        <div className="space-y-8">
-          <div>
-            <h3 className="text-md font-medium text-gray-800 mb-3">Key Stories</h3>
-            <div className="space-y-4">
-              {expansion.narrative_angles.key_stories.map((item, i) => (
-                <div key={i} className="p-4 bg-gray-50 rounded-md">
-                  {item}
+        <AnimatePresence>
+          {expandedSections.narrativeAngles && (
+            <motion.div 
+              className="p-6 space-y-8"
+              variants={contentVariants}
+              initial="hidden"
+              animate="visible"
+              exit="hidden"
+            >
+              <div>
+                <h3 className="text-md font-medium text-gray-800 mb-3 flex items-center">
+                  <ArrowRight className="w-4 h-4 mr-2 text-secondary opacity-80" />
+                  Key Stories
+                </h3>
+                <div className="space-y-4">
+                  {expansion.narrative_angles.key_stories.map((item, i) => (
+                    <motion.div 
+                      key={i} 
+                      className="p-4 bg-background rounded-lg border border-border shadow-sm"
+                      whileHover={{ x: 2, boxShadow: "0 4px 12px rgba(0, 0, 0, 0.05)" }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      {item}
+                    </motion.div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </div>
-          
-          <div>
-            <h3 className="text-md font-medium text-gray-800 mb-3">Messaging Themes</h3>
-            <div className="space-y-4">
-              {expansion.narrative_angles.messaging_themes.map((item, i) => (
-                <div key={i} className="p-4 bg-gray-50 rounded-md">
-                  {item}
+              </div>
+              
+              <div>
+                <h3 className="text-md font-medium text-gray-800 mb-3 flex items-center">
+                  <MessageCircle className="w-4 h-4 mr-2 text-secondary opacity-80" />
+                  Messaging Themes
+                </h3>
+                <div className="space-y-4">
+                  {expansion.narrative_angles.messaging_themes.map((item, i) => (
+                    <motion.div 
+                      key={i} 
+                      className="p-4 bg-background rounded-lg border border-border shadow-sm"
+                      whileHover={{ x: 2, boxShadow: "0 4px 12px rgba(0, 0, 0, 0.05)" }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      {item}
+                    </motion.div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </div>
-          
-          <div>
-            <h3 className="text-md font-medium text-gray-800 mb-3">Tone Guidance</h3>
-            <div className="p-4 bg-gray-50 rounded-md">
-              {expansion.narrative_angles.tone_guidance}
-            </div>
-          </div>
-        </div>
-      </div>
+              </div>
+              
+              <div>
+                <h3 className="text-md font-medium text-gray-800 mb-3 flex items-center">
+                  <Users className="w-4 h-4 mr-2 text-secondary opacity-80" />
+                  Tone Guidance
+                </h3>
+                <motion.div 
+                  className="p-4 bg-background rounded-lg border border-border shadow-sm"
+                  whileHover={{ y: -2, boxShadow: "0 4px 12px rgba(0, 0, 0, 0.05)" }}
+                  transition={{ duration: 0.2 }}
+                >
+                  {expansion.narrative_angles.tone_guidance}
+                </motion.div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
       
       {/* Activation Opportunities Section */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
-        <h2 className="text-xl font-semibold mb-6 pb-2 border-b border-gray-100">Activation Opportunities</h2>
+      <motion.div 
+        className="bg-card rounded-lg shadow-sm border border-border overflow-hidden"
+        variants={itemVariants}
+      >
+        <button 
+          onClick={() => toggleSection('activationOpportunities')}
+          className="w-full flex items-center justify-between p-6 border-b border-border hover:bg-gray-50/50 transition-colors"
+        >
+          <div className="flex items-center">
+            <Lightbulb className="w-5 h-5 text-secondary mr-3" />
+            <h2 className="text-xl font-semibold tracking-tight text-card-foreground">Activation Opportunities</h2>
+          </div>
+          {expandedSections.activationOpportunities ? (
+            <ChevronUp className="w-5 h-5 text-gray-400" />
+          ) : (
+            <ChevronDown className="w-5 h-5 text-gray-400" />
+          )}
+        </button>
         
-        <div className="space-y-8">
-          <div>
-            <h3 className="text-md font-medium text-gray-800 mb-3">Key Moments</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {expansion.activation_opportunities.key_moments.map((item, i) => (
-                <div key={i} className="p-4 bg-gray-50 rounded-md">
-                  {item}
+        <AnimatePresence>
+          {expandedSections.activationOpportunities && (
+            <motion.div 
+              className="p-6 space-y-8"
+              variants={contentVariants}
+              initial="hidden"
+              animate="visible"
+              exit="hidden"
+            >
+              <div>
+                <h3 className="text-md font-medium text-gray-800 mb-3 flex items-center">
+                  <ArrowRight className="w-4 h-4 mr-2 text-secondary opacity-80" />
+                  Key Moments
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {expansion.activation_opportunities.key_moments.map((item, i) => (
+                    <motion.div 
+                      key={i} 
+                      className="p-4 bg-background rounded-lg border border-border shadow-sm"
+                      whileHover={{ y: -2, boxShadow: "0 4px 12px rgba(0, 0, 0, 0.05)" }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      {item}
+                    </motion.div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </div>
-          
-          <div>
-            <h3 className="text-md font-medium text-gray-800 mb-3">Platform Ideas</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {expansion.activation_opportunities.platform_ideas.map((item, i) => (
-                <div key={i} className="p-4 bg-gray-50 rounded-md">
-                  {item}
+              </div>
+              
+              <div>
+                <h3 className="text-md font-medium text-gray-800 mb-3 flex items-center">
+                  <LayoutGrid className="w-4 h-4 mr-2 text-secondary opacity-80" />
+                  Platform Ideas
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {expansion.activation_opportunities.platform_ideas.map((item, i) => (
+                    <motion.div 
+                      key={i} 
+                      className="p-4 bg-background rounded-lg border border-border shadow-sm"
+                      whileHover={{ y: -2, boxShadow: "0 4px 12px rgba(0, 0, 0, 0.05)" }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      {item}
+                    </motion.div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </div>
-          
-          <div>
-            <h3 className="text-md font-medium text-gray-800 mb-3">Engagement Hooks</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {expansion.activation_opportunities.engagement_hooks.map((item, i) => (
-                <div key={i} className="p-4 bg-gray-50 rounded-md">
-                  {item}
+              </div>
+              
+              <div>
+                <h3 className="text-md font-medium text-gray-800 mb-3 flex items-center">
+                  <Users className="w-4 h-4 mr-2 text-secondary opacity-80" />
+                  Engagement Hooks
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {expansion.activation_opportunities.engagement_hooks.map((item, i) => (
+                    <motion.div 
+                      key={i} 
+                      className="p-4 bg-background rounded-lg border border-border shadow-sm"
+                      whileHover={{ y: -2, boxShadow: "0 4px 12px rgba(0, 0, 0, 0.05)" }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      {item}
+                    </motion.div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
       
       {/* Evolution Questions Section */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
-        <h2 className="text-xl font-semibold mb-6 pb-2 border-b border-gray-100">Evolution Questions</h2>
+      <motion.div 
+        className="bg-card rounded-lg shadow-sm border border-border overflow-hidden"
+        variants={itemVariants}
+      >
+        <button 
+          onClick={() => toggleSection('evolutionQuestions')}
+          className="w-full flex items-center justify-between p-6 border-b border-border hover:bg-gray-50/50 transition-colors"
+        >
+          <div className="flex items-center">
+            <HelpCircle className="w-5 h-5 text-secondary mr-3" />
+            <h2 className="text-xl font-semibold tracking-tight text-card-foreground">Evolution Questions</h2>
+          </div>
+          {expandedSections.evolutionQuestions ? (
+            <ChevronUp className="w-5 h-5 text-gray-400" />
+          ) : (
+            <ChevronDown className="w-5 h-5 text-gray-400" />
+          )}
+        </button>
         
-        <ul className="list-disc pl-8 space-y-4">
-          {expansion.evolution_questions.map((question, i) => (
-            <li key={i} className="text-gray-800">
-              {question}
-            </li>
-          ))}
-        </ul>
-      </div>
-    </div>
+        <AnimatePresence>
+          {expandedSections.evolutionQuestions && (
+            <motion.div 
+              className="p-6"
+              variants={contentVariants}
+              initial="hidden"
+              animate="visible"
+              exit="hidden"
+            >
+              <ul className="space-y-4">
+                {expansion.evolution_questions.map((question, i) => (
+                  <motion.li 
+                    key={i} 
+                    className="p-4 bg-background rounded-lg border border-border shadow-sm flex"
+                    whileHover={{ x: 4, boxShadow: "0 4px 12px rgba(0, 0, 0, 0.05)" }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <span className="text-secondary mr-3">•</span>
+                    <span>{question}</span>
+                  </motion.li>
+                ))}
+              </ul>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
+    </motion.div>
   );
 };
 

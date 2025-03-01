@@ -8,9 +8,16 @@ interface ModalProps {
   onClose: () => void;
   children: React.ReactNode;
   title?: string;
+  size?: 'sm' | 'md' | 'lg' | 'xl';
 }
 
-const Modal: React.FC<ModalProps> = ({ isOpen, onClose, children, title }) => {
+const Modal: React.FC<ModalProps> = ({ 
+  isOpen, 
+  onClose, 
+  children, 
+  title,
+  size = 'md'
+}) => {
   // Lock scroll when modal is open
   useEffect(() => {
     if (isOpen) {
@@ -38,6 +45,14 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, children, title }) => {
     };
   }, [onClose]);
 
+  // Size classes
+  const sizeClasses = {
+    sm: 'max-w-md',
+    md: 'max-w-2xl',
+    lg: 'max-w-4xl',
+    xl: 'max-w-6xl'
+  };
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -55,7 +70,7 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, children, title }) => {
           {/* Modal */}
           <div className="flex min-h-full items-center justify-center p-4">
             <motion.div 
-              className="relative bg-card rounded-lg shadow-lg w-full max-w-3xl max-h-[90vh] overflow-y-auto"
+              className={`relative bg-card rounded-lg shadow-xl w-full ${sizeClasses[size]} max-h-[90vh] overflow-hidden`}
               initial={{ opacity: 0, y: 20, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 20, scale: 0.95 }}
@@ -66,21 +81,37 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, children, title }) => {
               }}
             >
               {/* Header */}
-              <div className="flex items-center justify-between p-6 border-b border-border">
-                {title && (
+              {title && (
+                <div className="sticky top-0 z-10 bg-card border-b border-border p-6 flex justify-between items-center">
                   <h2 className="text-2xl font-semibold text-card-foreground">{title}</h2>
-                )}
-                <button
+                  <motion.button
+                    onClick={onClose}
+                    className="text-gray-400 hover:text-gray-500 transition-colors focus:outline-none focus:ring-2 focus:ring-primary rounded-full p-1"
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                  >
+                    <X className="w-6 h-6" />
+                  </motion.button>
+                </div>
+              )}
+              
+              {/* If no title, just have close button in corner */}
+              {!title && (
+                <motion.button
                   onClick={onClose}
-                  className="text-gray-400 hover:text-gray-500 transition-colors focus:outline-none focus:ring-2 focus:ring-primary rounded-full"
+                  className="absolute top-4 right-4 z-10 text-gray-400 hover:text-gray-500 transition-colors focus:outline-none focus:ring-2 focus:ring-primary rounded-full p-1"
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
                 >
                   <X className="w-6 h-6" />
-                </button>
-              </div>
+                </motion.button>
+              )}
               
-              {/* Content */}
-              <div className="p-6">
-                {children}
+              {/* Content - Scrollable */}
+              <div className="overflow-y-auto max-h-[calc(90vh-5rem)]">
+                <div className="p-6">
+                  {children}
+                </div>
               </div>
             </motion.div>
           </div>
