@@ -17,25 +17,39 @@ const TerritoryCard: React.FC<TerritoryCardProps> = ({
   onSelect,
   index
 }) => {
-  // Generate a gradient background based on the territory name
-  // This creates a unique but consistent gradient for each territory
-  const colors = useMemo(() => {
+    // Generate a sophisticated gradient background based on the territory name
+    // This creates a unique but consistent gradient for each territory with warm, jewel-tone colors
+    const colors = useMemo(() => {
     const getGradient = (str: string) => {
       // Simple hash function to get a number from string
       const hash = str.split('').reduce((acc, char) => {
         return char.charCodeAt(0) + ((acc << 5) - acc);
       }, 0);
       
-      // Use the hash to generate hue values (keep in warm or cool tones)
-      const baseHue = Math.abs(hash % 360);
-      const hue1 = (baseHue % 180) + (baseHue > 180 ? 0 : 180); // 0-179 or 180-359
-      const hue2 = (hue1 + 30) % 360;
+      // Palette inspired by jewel tones, metallics, and warm neutrals that complement the app's red theme
+      // All coordinated with the bone/red/white/black primary palette
+      const palettes = [
+        // Warm reds/burgundies
+        { main: 'hsla(352, 70%, 98%, 1)', accent: 'hsla(352, 80%, 40%, 0.75)', highlight: 'hsla(352, 70%, 50%, 0.12)' },
+        // Golds
+        { main: 'hsla(45, 60%, 98%, 1)', accent: 'hsla(45, 80%, 50%, 0.75)', highlight: 'hsla(45, 70%, 50%, 0.12)' },
+        // Copper/bronze
+        { main: 'hsla(30, 60%, 98%, 1)', accent: 'hsla(30, 80%, 40%, 0.75)', highlight: 'hsla(30, 70%, 40%, 0.12)' },
+        // Deep purple/amethyst (complementary to the red)
+        { main: 'hsla(280, 30%, 98%, 1)', accent: 'hsla(280, 50%, 40%, 0.75)', highlight: 'hsla(280, 40%, 40%, 0.12)' },
+        // Silver/platinum
+        { main: 'hsla(220, 15%, 98%, 1)', accent: 'hsla(220, 30%, 60%, 0.75)', highlight: 'hsla(220, 15%, 50%, 0.12)' },
+        // Warm amber
+        { main: 'hsla(35, 60%, 98%, 1)', accent: 'hsla(35, 90%, 50%, 0.75)', highlight: 'hsla(35, 80%, 50%, 0.12)' },
+        // Deep garnet
+        { main: 'hsla(340, 30%, 98%, 1)', accent: 'hsla(340, 70%, 35%, 0.75)', highlight: 'hsla(340, 60%, 40%, 0.12)' },
+        // Muted jade (harmonious with reds)
+        { main: 'hsla(150, 20%, 98%, 1)', accent: 'hsla(150, 30%, 40%, 0.75)', highlight: 'hsla(150, 25%, 40%, 0.12)' }
+      ];
       
-      return {
-        main: `hsla(${hue1}, 80%, 50%, 0.05)`,
-        accent: `hsla(${hue2}, 90%, 60%, 0.8)`,
-        highlight: `hsla(${hue1}, 95%, 60%, 0.1)`
-      };
+      // Select palette based on hash
+      const paletteIndex = Math.abs(hash) % palettes.length;
+      return palettes[paletteIndex];
     };
     
     return getGradient(territory.territory);

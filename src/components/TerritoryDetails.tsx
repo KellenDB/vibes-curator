@@ -60,32 +60,92 @@ const TerritoryDetails: React.FC<TerritoryDetailsProps> = ({
   const [showContextForm, setShowContextForm] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [expandedSections, setExpandedSections] = useState({
-    visualWorld: true,
-    narrativeAngles: true,
-    activationOpportunities: true,
-    evolutionQuestions: true
+    visualWorld: false,
+    narrativeAngles: false,
+    activationOpportunities: false,
+    evolutionQuestions: false
   });
   
-  // Generate dynamic colors based on territory name (similar to TerritoryCard)
-  const colors = useMemo(() => {
+    // Generate dynamic colors based on territory name with jewel tones & metallics
+    const colors = useMemo(() => {
     const getGradient = (str: string) => {
       // Simple hash function to get a number from string
       const hash = str.split('').reduce((acc, char) => {
         return char.charCodeAt(0) + ((acc << 5) - acc);
       }, 0);
       
-      // Use the hash to generate hue values (keep in warm or cool tones)
-      const baseHue = Math.abs(hash % 360);
-      const hue1 = (baseHue % 180) + (baseHue > 180 ? 0 : 180); // 0-179 or 180-359
-      const hue2 = (hue1 + 30) % 360;
+      // Palette inspired by jewel tones, metallics, and warm neutrals that complement the app's red theme
+      // All coordinated with the bone/red/white/black primary palette
+      const palettes = [
+        // Warm reds/burgundies
+        { 
+          main: 'hsla(352, 70%, 98%, 1)', 
+          accent: 'hsla(352, 80%, 40%, 0.75)', 
+          highlight: 'hsla(352, 70%, 50%, 0.12)',
+          gradientStart: 'hsla(352, 70%, 40%, 1)',
+          gradientEnd: 'hsla(352, 80%, 60%, 1)'
+        },
+        // Golds
+        { 
+          main: 'hsla(45, 60%, 98%, 1)', 
+          accent: 'hsla(45, 80%, 50%, 0.75)', 
+          highlight: 'hsla(45, 70%, 50%, 0.12)',
+          gradientStart: 'hsla(45, 70%, 40%, 1)',
+          gradientEnd: 'hsla(45, 80%, 60%, 1)'
+        },
+        // Copper/bronze
+        { 
+          main: 'hsla(30, 60%, 98%, 1)', 
+          accent: 'hsla(30, 80%, 40%, 0.75)', 
+          highlight: 'hsla(30, 70%, 40%, 0.12)',
+          gradientStart: 'hsla(30, 70%, 40%, 1)',
+          gradientEnd: 'hsla(30, 80%, 55%, 1)'
+        },
+        // Deep purple/amethyst (complementary to the red)
+        { 
+          main: 'hsla(280, 30%, 98%, 1)', 
+          accent: 'hsla(280, 50%, 40%, 0.75)', 
+          highlight: 'hsla(280, 40%, 40%, 0.12)',
+          gradientStart: 'hsla(280, 50%, 35%, 1)',
+          gradientEnd: 'hsla(280, 60%, 55%, 1)'
+        },
+        // Silver/platinum
+        { 
+          main: 'hsla(220, 15%, 98%, 1)', 
+          accent: 'hsla(220, 30%, 60%, 0.75)', 
+          highlight: 'hsla(220, 15%, 50%, 0.12)',
+          gradientStart: 'hsla(220, 20%, 60%, 1)',
+          gradientEnd: 'hsla(220, 15%, 75%, 1)'
+        },
+        // Warm amber
+        { 
+          main: 'hsla(35, 60%, 98%, 1)', 
+          accent: 'hsla(35, 90%, 50%, 0.75)', 
+          highlight: 'hsla(35, 80%, 50%, 0.12)',
+          gradientStart: 'hsla(35, 80%, 40%, 1)',
+          gradientEnd: 'hsla(35, 90%, 60%, 1)'
+        },
+        // Deep garnet
+        { 
+          main: 'hsla(340, 30%, 98%, 1)', 
+          accent: 'hsla(340, 70%, 35%, 0.75)', 
+          highlight: 'hsla(340, 60%, 40%, 0.12)',
+          gradientStart: 'hsla(340, 60%, 35%, 1)',
+          gradientEnd: 'hsla(340, 70%, 50%, 1)'
+        },
+        // Muted jade (harmonious with reds)
+        { 
+          main: 'hsla(150, 20%, 98%, 1)', 
+          accent: 'hsla(150, 30%, 40%, 0.75)', 
+          highlight: 'hsla(150, 25%, 40%, 0.12)',
+          gradientStart: 'hsla(150, 25%, 35%, 1)',
+          gradientEnd: 'hsla(150, 30%, 45%, 1)'
+        }
+      ];
       
-      return {
-        main: `hsla(${hue1}, 80%, 50%, 0.05)`,
-        accent: `hsla(${hue2}, 90%, 60%, 0.8)`,
-        highlight: `hsla(${hue1}, 95%, 60%, 0.1)`,
-        gradientStart: `hsla(${hue1}, 80%, 50%, 1)`,
-        gradientEnd: `hsla(${hue2}, 90%, 60%, 1)`
-      };
+      // Select palette based on hash
+      const paletteIndex = Math.abs(hash) % palettes.length;
+      return palettes[paletteIndex];
     };
     
     return getGradient(territory.territory);

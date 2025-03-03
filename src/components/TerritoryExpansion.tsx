@@ -1,4 +1,5 @@
 // src/components/TerritoryExpansion.tsx
+//DEPRECATED -- NO LONGER IN USE
 import React, { useState } from 'react';
 import Button from './Button';
 import Modal from './Modal';

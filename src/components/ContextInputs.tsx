@@ -88,6 +88,19 @@ const ContextInputs: React.FC<ContextInputsProps> = ({
 
         <motion.div variants={itemVariants}>
           <label className="block text-sm text-gray-600 font-medium mb-2">
+            Target Audience Details
+          </label>
+          <input
+            type="text"
+            className="w-full p-3 border border-border rounded-md focus:ring-2 focus:ring-ring focus:border-primary transition-colors"
+            placeholder="Any specific audience context?"
+            value={audience}
+            onChange={(e) => setAudience(e.target.value)}
+          />
+        </motion.div>
+
+        <motion.div variants={itemVariants}>
+          <label className="block text-sm text-gray-600 font-medium mb-2">
             Primary Channel
           </label>
           <select
@@ -101,19 +114,6 @@ const ContextInputs: React.FC<ContextInputsProps> = ({
             <option value="Experiential">Experiential</option>
             <option value="Integrated">Integrated</option>
           </select>
-        </motion.div>
-
-        <motion.div variants={itemVariants}>
-          <label className="block text-sm text-gray-600 font-medium mb-2">
-            Target Audience Details
-          </label>
-          <input
-            type="text"
-            className="w-full p-3 border border-border rounded-md focus:ring-2 focus:ring-ring focus:border-primary transition-colors"
-            placeholder="Any specific audience context?"
-            value={audience}
-            onChange={(e) => setAudience(e.target.value)}
-          />
         </motion.div>
       </motion.div>
 
