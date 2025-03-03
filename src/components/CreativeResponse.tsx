@@ -1,6 +1,6 @@
 // src/components/CreativeResponse.tsx
 import React, { useState, useEffect } from 'react';
-import { ChevronDown, ChevronUp, Sparkles } from 'lucide-react';
+import { ChevronDown, ChevronUp, Sparkles, Map, Brain } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import TerritoryCard from './TerritoryCard';
 import { Territory } from '../types';
@@ -172,10 +172,13 @@ const CreativeResponse: React.FC<CreativeResponseProps> = ({
             variants={itemVariants}
           >
             <div className={`border-b border-border ${compactMode ? 'px-4 py-3' : 'px-8 py-6'}`}>
-              <h2 className={`${compactMode ? 'text-xl' : 'text-2xl'} font-medium tracking-tight text-card-foreground`}>
-                Brainstorm
-              </h2>
-            </div>
+              <div className="flex items-center">
+              <Brain className="w-5 h-5 text-secondary mr-2" />
+                <h2 className={`${compactMode ? 'text-xl' : 'text-2xl'} font-medium tracking-tight text-card-foreground`}>
+                  Brainstorm
+                </h2>
+              </div>
+              </div>
             <div className={`${compactMode ? 'px-4 py-3' : 'px-8 py-6'}`}>
               <p className={`text-gray-700 leading-relaxed ${compactMode ? 'text-sm' : ''} whitespace-pre-wrap`}>
                 {compactMode && !showFullBrainstorm
@@ -213,9 +216,12 @@ const CreativeResponse: React.FC<CreativeResponseProps> = ({
               onClick={() => setShowTerritories(!showTerritories)}
               className={`w-full flex items-center justify-between ${compactMode ? 'px-4 py-3' : 'px-8 py-6'} border-b border-border hover:bg-gray-50 transition-colors`}
             >
-              <h2 className={`${compactMode ? 'text-xl' : 'text-2xl'} font-medium tracking-tight text-card-foreground`}>
-                Creative Territories
-              </h2>
+              <div className="flex items-center">
+                <Map className="w-5 h-5 text-secondary mr-2" />
+                <h2 className={`${compactMode ? 'text-xl' : 'text-2xl'} font-medium tracking-tight text-card-foreground`}>
+                  Creative Territories
+                </h2>
+              </div>
               {showTerritories ? (
                 <ChevronUp className="w-5 h-5 text-gray-400" />
               ) : (

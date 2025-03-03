@@ -36,6 +36,43 @@ const Page = () => {
   // Add a cache to store territory expansions
   const [expansionCache, setExpansionCache] = useState<{[key: string]: TerritoryExpansionResponse}>({});
 
+  const [expandedSectionsMap, setExpandedSectionsMap] = useState<{
+    [territoryId: string]: {
+      visualWorld: boolean;
+      narrativeAngles: boolean;
+      activationOpportunities: boolean;
+      evolutionQuestions: boolean;
+    }
+  }>({});
+  
+  const [selectedItemsMap, setSelectedItemsMap] = useState<{
+    [territoryId: string]: {
+      aesthetics: Set<number>;
+      inspiration: Set<number>;
+      signatureElements: Set<number>;
+      keyStories: Set<number>;
+      messagingThemes: Set<number>;
+      keyMoments: Set<number>;
+      platformIdeas: Set<number>;
+      engagementHooks: Set<number>;
+      evolutionQuestions: Set<number>;
+    }
+  }>({});
+
+  // Add this type definition at the top level of your file or near your component
+type SectionKey = 'visualWorld' | 'narrativeAngles' | 'activationOpportunities' | 'evolutionQuestions';
+
+type ItemCategory = 
+  | 'aesthetics'
+  | 'inspiration'
+  | 'signatureElements'
+  | 'keyStories'
+  | 'messagingThemes'
+  | 'keyMoments'
+  | 'platformIdeas'
+  | 'engagementHooks'
+  | 'evolutionQuestions';
+
   const handleGenerateVibes = async () => {
     setLoading(true);
     setError(null);
@@ -272,6 +309,61 @@ const Page = () => {
     }
   };
 
+  const handleToggleSection = (territoryId: string, section: SectionKey) => {
+    setExpandedSectionsMap(prev => {
+      const currentSections = prev[territoryId] || {
+        visualWorld: false,
+        narrativeAngles: false,
+        activationOpportunities: false,
+        evolutionQuestions: false
+      };
+      
+      return {
+        ...prev,
+        [territoryId]: {
+          ...currentSections,
+          [section]: !currentSections[section]
+        }
+      };
+    });
+  };
+  
+  const handleToggleItemSelection = (territoryId: string, category: ItemCategory, index: number) => {
+    setSelectedItemsMap(prev => {
+      // Create default empty state if this territory has no selections yet
+      const currentSelections = prev[territoryId] || {
+        aesthetics: new Set<number>(),
+        inspiration: new Set<number>(),
+        signatureElements: new Set<number>(),
+        keyStories: new Set<number>(),
+        messagingThemes: new Set<number>(),
+        keyMoments: new Set<number>(),
+        platformIdeas: new Set<number>(),
+        engagementHooks: new Set<number>(),
+        evolutionQuestions: new Set<number>()
+      };
+      
+      // Clone the current selection set for this category
+      const newSet = new Set(currentSelections[category]);
+      
+      // Toggle the selection
+      if (newSet.has(index)) {
+        newSet.delete(index);
+      } else {
+        newSet.add(index);
+      }
+      
+      // Return updated state with this change
+      return {
+        ...prev,
+        [territoryId]: {
+          ...currentSelections,
+          [category]: newSet
+        }
+      };
+    });
+  };
+
   // Function to restore scroll position
   const restoreScrollPosition = () => {
     const mainContent = document.getElementById('main-content-container');
@@ -463,20 +555,41 @@ const Page = () => {
             
             {/* Territory Details - scrollable container */}
             <div className="p-6 overflow-y-auto flex-1">
-              <TerritoryDetails
-                territory={selectedTerritory}
-                expansionData={territoryExpansion}
-                isLoading={expandLoading || updatingExpansion}
-                error={error}
-                onUpdateContext={handleUpdateExpansion}
-                originalContext={{
-                  product,
-                  direction,
-                  vibes,
-                  approach: creativeResponse?.Approach,
-                  brainstorm: creativeResponse?.Brainstorm
-                }}
-              />
+            <TerritoryDetails
+              territory={selectedTerritory}
+              expansionData={territoryExpansion}
+              isLoading={expandLoading || updatingExpansion}
+              error={error}
+              onUpdateContext={handleUpdateExpansion}
+              originalContext={{
+                product,
+                direction,
+                vibes,
+                approach: creativeResponse?.Approach,
+                brainstorm: creativeResponse?.Brainstorm
+              }}
+              expandedSections={expandedSectionsMap[selectedTerritory.territory] || {
+                visualWorld: false,
+                narrativeAngles: false,
+                activationOpportunities: false,
+                evolutionQuestions: false
+              }}
+              onToggleSection={(section) => handleToggleSection(selectedTerritory.territory, section)}
+              selectedItems={selectedItemsMap[selectedTerritory.territory] || {
+                aesthetics: new Set(),
+                inspiration: new Set(),
+                signatureElements: new Set(),
+                keyStories: new Set(),
+                messagingThemes: new Set(),
+                keyMoments: new Set(),
+                platformIdeas: new Set(),
+                engagementHooks: new Set(),
+                evolutionQuestions: new Set()
+              }}
+              onToggleItemSelection={(category, index) => 
+                handleToggleItemSelection(selectedTerritory.territory, category, index)
+              }
+            />
             </div>
           </motion.div>
         )}

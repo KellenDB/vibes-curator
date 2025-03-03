@@ -26,8 +26,23 @@ import {
   LayoutGrid,
   Users,
   BookOpen,
-  HelpCircle
+  HelpCircle,
+  Check
 } from 'lucide-react';
+
+// Put this before your component definition in TerritoryDetails.tsx
+type SectionKey = 'visualWorld' | 'narrativeAngles' | 'activationOpportunities' | 'evolutionQuestions';
+
+type ItemCategory = 
+  | 'aesthetics'
+  | 'inspiration'
+  | 'signatureElements'
+  | 'keyStories'
+  | 'messagingThemes'
+  | 'keyMoments'
+  | 'platformIdeas'
+  | 'engagementHooks'
+  | 'evolutionQuestions';
 
 interface TerritoryDetailsProps {
   territory: Territory;
@@ -47,6 +62,26 @@ interface TerritoryDetailsProps {
       workthrough: string;
     };
   };
+
+  expandedSections: {
+    visualWorld: boolean;
+    narrativeAngles: boolean;
+    activationOpportunities: boolean;
+    evolutionQuestions: boolean;
+  };
+  onToggleSection: (section: SectionKey) => void;
+  selectedItems: {
+    aesthetics: Set<number>;
+    inspiration: Set<number>;
+    signatureElements: Set<number>;
+    keyStories: Set<number>;
+    messagingThemes: Set<number>;
+    keyMoments: Set<number>;
+    platformIdeas: Set<number>;
+    engagementHooks: Set<number>;
+    evolutionQuestions: Set<number>;
+  };
+  onToggleItemSelection: (category: ItemCategory, index: number) => void;
 }
 
 const TerritoryDetails: React.FC<TerritoryDetailsProps> = ({
@@ -55,16 +90,14 @@ const TerritoryDetails: React.FC<TerritoryDetailsProps> = ({
   isLoading,
   error,
   onUpdateContext,
-  originalContext
+  originalContext,
+  expandedSections,
+  onToggleSection,
+  selectedItems,
+  onToggleItemSelection
 }) => {
   const [showContextForm, setShowContextForm] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [expandedSections, setExpandedSections] = useState({
-    visualWorld: false,
-    narrativeAngles: false,
-    activationOpportunities: false,
-    evolutionQuestions: false
-  });
   
     // Generate dynamic colors based on territory name with jewel tones & metallics
     const colors = useMemo(() => {
@@ -151,12 +184,13 @@ const TerritoryDetails: React.FC<TerritoryDetailsProps> = ({
     return getGradient(territory.territory);
   }, [territory.territory]);
   
+  // FUnction to toggle selected items
+  const toggleItemSelection = (category: ItemCategory, index: number) => {
+    onToggleItemSelection(category, index);
+  };
   // Function to toggle section expansion
-  const toggleSection = (section: keyof typeof expandedSections) => {
-    setExpandedSections(prev => ({
-      ...prev,
-      [section]: !prev[section]
-    }));
+  const toggleSection = (section: SectionKey) => {
+    onToggleSection(section);
   };
   
   // Function to handle updating territory with new context
@@ -515,42 +549,109 @@ const TerritoryDetails: React.FC<TerritoryDetailsProps> = ({
               animate="visible"
               exit="hidden"
             >
-              <div>
-                <h3 className="text-md font-medium text-gray-800 mb-3 flex items-center">
-                  <Eye className="w-4 h-4 mr-2 text-secondary opacity-80" />
-                  Aesthetics
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {expansion.visual_world.aesthetics.map((item, i) => (
-                    <motion.div 
-                      key={i} 
-                      className="p-4 bg-background rounded-lg border border-border shadow-sm"
-                      whileHover={{ y: -2, boxShadow: "0 4px 12px rgba(0, 0, 0, 0.05)" }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      {item}
-                    </motion.div>
-                  ))}
+                <div>
+                    <h3 className="text-md font-medium text-gray-800 mb-3 flex items-center">
+                        <Eye className="w-4 h-4 mr-2 text-secondary opacity-80" />
+                        Aesthetics
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {expansion.visual_world.aesthetics.map((item, i) => {
+                        const isSelected = selectedItems.aesthetics.has(i);
+                        
+                        return (
+                            <motion.div 
+                            key={i} 
+                            className={`p-4 rounded-lg border cursor-pointer transition-all duration-300 ${
+                                selectedItems.aesthetics.has(i) 
+                                ? 'border-transparent shadow-lg font-semibold' 
+                                : 'border-border text-gray-800 shadow-md'
+                            }`}
+                            style={{
+                                color: isSelected ? colors.gradientStart : '',
+                                transform: isSelected ? 'scale(1.02)' : 'scale(1)', // Slight pop effect
+                            }}
+                            whileHover={{ y: -3, boxShadow: "0 6px 14px rgba(0, 0, 0, 0.08)" }}
+                            whileTap={{ scale: 0.96 }}
+                            transition={{ duration: 0.1, ease: [0.23, 1, 0.32, 1] }}
+                            onClick={() => toggleItemSelection('aesthetics', i)}
+                            initial={false}
+                            animate={{
+                                backgroundColor: isSelected ? colors.main : 'var(--background)',
+                                borderColor: isSelected ? colors.accent : 'var(--border)',
+                                boxShadow: isSelected ? "0 6px 18px rgba(0, 0, 0, 0.12)" : "0 2px 6px rgba(0, 0, 0, 0.05)",
+                            }}
+                        >
+                            <div className="flex items-start justify-between">
+                                <span>{item}</span>
+                                {isSelected && (
+                                    <motion.div 
+                                        className="ml-2 flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center"
+                                        style={{ backgroundColor: `${colors.accent}60` }}
+                                        initial={{ scale: 0, opacity: 0 }}
+                                        animate={{ scale: 1.1, opacity: 1 }}
+                                        transition={{ duration: 0.15 }}
+                                    >
+                                        <Check className="w-3 h-3" style={{ color: colors.accent, strokeWidth: 3 }} />
+                                    </motion.div>
+                                )}
+                            </div>
+                        </motion.div>
+                        
+                        );
+                        })}
+                    </div>
                 </div>
-              </div>
-              
+                            
               <div>
                 <h3 className="text-md font-medium text-gray-800 mb-3 flex items-center">
                   <Sparkles className="w-4 h-4 mr-2 text-secondary opacity-80" />
                   Inspiration
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {expansion.visual_world.inspiration.map((item, i) => (
-                    <motion.div 
-                      key={i} 
-                      className="p-4 bg-background rounded-lg border border-border shadow-sm"
-                      whileHover={{ y: -2, boxShadow: "0 4px 12px rgba(0, 0, 0, 0.05)" }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      {item}
-                    </motion.div>
-                  ))}
-                </div>
+                        {expansion.visual_world.inspiration.map((item, i) => {
+                        const isSelected = selectedItems.inspiration.has(i);
+                        
+                        return (
+                            <motion.div 
+                            key={i} 
+                            className={`p-4 rounded-lg border cursor-pointer transition-all duration-300 ${
+                                selectedItems.inspiration.has(i) 
+                                ? 'border-transparent shadow-lg font-semibold' 
+                                : 'border-border text-gray-800 shadow-md'
+                            }`}
+                            style={{
+                                color: isSelected ? colors.gradientStart : '',
+                                transform: isSelected ? 'scale(1.02)' : 'scale(1)', // Slight pop effect
+                            }}
+                            whileHover={{ y: -3, boxShadow: "0 6px 14px rgba(0, 0, 0, 0.08)" }}
+                            whileTap={{ scale: 0.96 }}
+                            transition={{ duration: 0.1, ease: [0.23, 1, 0.32, 1] }}
+                            onClick={() => toggleItemSelection('inspiration', i)}
+                            initial={false}
+                            animate={{
+                                backgroundColor: isSelected ? colors.main : 'var(--background)',
+                                borderColor: isSelected ? colors.accent : 'var(--border)',
+                                boxShadow: isSelected ? "0 6px 18px rgba(0, 0, 0, 0.12)" : "0 2px 6px rgba(0, 0, 0, 0.05)",
+                            }}
+                        >
+                            <div className="flex items-start justify-between">
+                                <span>{item}</span>
+                                {isSelected && (
+                                    <motion.div 
+                                        className="ml-2 flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center"
+                                        style={{ backgroundColor: `${colors.accent}60` }}
+                                        initial={{ scale: 0, opacity: 0 }}
+                                        animate={{ scale: 1.1, opacity: 1 }}
+                                        transition={{ duration: 0.15 }}
+                                    >
+                                        <Check className="w-3 h-3" style={{ color: colors.accent, strokeWidth: 3 }} />
+                                    </motion.div>
+                                )}
+                            </div>
+                        </motion.div>
+                        );
+                        })}
+                    </div>
               </div>
               
               <div>
@@ -559,16 +660,50 @@ const TerritoryDetails: React.FC<TerritoryDetailsProps> = ({
                   Signature Elements
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {expansion.visual_world.signature_elements.map((item, i) => (
-                    <motion.div 
-                      key={i} 
-                      className="p-4 bg-background rounded-lg border border-border shadow-sm"
-                      whileHover={{ y: -2, boxShadow: "0 4px 12px rgba(0, 0, 0, 0.05)" }}
-                      transition={{ duration: 0.2 }}
+                    {expansion.visual_world.signature_elements.map((item, i) => {
+                    const isSelected = selectedItems.signatureElements.has(i);
+                    
+                    return (
+                        <motion.div 
+                        key={i} 
+                        className={`p-4 rounded-lg border cursor-pointer transition-all duration-300 ${
+                            selectedItems.signatureElements.has(i) 
+                            ? 'border-transparent shadow-lg font-semibold' 
+                            : 'border-border text-gray-800 shadow-md'
+                        }`}
+                        style={{
+                            color: isSelected ? colors.gradientStart : '',
+                            transform: isSelected ? 'scale(1.02)' : 'scale(1)', // Slight pop effect
+                        }}
+                        whileHover={{ y: -3, boxShadow: "0 6px 14px rgba(0, 0, 0, 0.08)" }}
+                        whileTap={{ scale: 0.96 }}
+                        transition={{ duration: 0.1, ease: [0.23, 1, 0.32, 1] }}
+                        onClick={() => toggleItemSelection('signatureElements', i)}
+                        initial={false}
+                        animate={{
+                            backgroundColor: isSelected ? colors.main : 'var(--background)',
+                            borderColor: isSelected ? colors.accent : 'var(--border)',
+                            boxShadow: isSelected ? "0 6px 18px rgba(0, 0, 0, 0.12)" : "0 2px 6px rgba(0, 0, 0, 0.05)",
+                        }}
                     >
-                      {item}
+                        <div className="flex items-start justify-between">
+                            <span>{item}</span>
+                            {isSelected && (
+                                <motion.div 
+                                    className="ml-2 flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center"
+                                    style={{ backgroundColor: `${colors.accent}60` }}
+                                    initial={{ scale: 0, opacity: 0 }}
+                                    animate={{ scale: 1.1, opacity: 1 }}
+                                    transition={{ duration: 0.15 }}
+                                >
+                                    <Check className="w-3 h-3" style={{ color: colors.accent, strokeWidth: 3 }} />
+                                </motion.div>
+                            )}
+                        </div>
                     </motion.div>
-                  ))}
+                        
+                    );
+                    })}
                 </div>
               </div>
             </motion.div>
@@ -605,57 +740,122 @@ const TerritoryDetails: React.FC<TerritoryDetailsProps> = ({
               animate="visible"
               exit="hidden"
             >
-              <div>
-                <h3 className="text-md font-medium text-gray-800 mb-3 flex items-center">
-                  <ArrowRight className="w-4 h-4 mr-2 text-secondary opacity-80" />
-                  Key Stories
-                </h3>
-                <div className="space-y-4">
-                  {expansion.narrative_angles.key_stories.map((item, i) => (
+                <div>
+                    <h3 className="text-md font-medium text-gray-800 mb-3 flex items-center">
+                    <Users className="w-4 h-4 mr-2 text-secondary opacity-80" />
+                    Tone Guidance
+                    </h3>
                     <motion.div 
-                      key={i} 
-                      className="p-4 bg-background rounded-lg border border-border shadow-sm"
-                      whileHover={{ x: 2, boxShadow: "0 4px 12px rgba(0, 0, 0, 0.05)" }}
-                      transition={{ duration: 0.2 }}
+                    className="p-4 bg-background rounded-lg border border-border shadow-sm"
+                    whileHover={{ y: -2, boxShadow: "0 4px 12px rgba(0, 0, 0, 0.05)" }}
+                    transition={{ duration: 0.2 }}
                     >
-                      {item}
+                    {expansion.narrative_angles.tone_guidance}
                     </motion.div>
-                  ))}
                 </div>
-              </div>
-              
-              <div>
-                <h3 className="text-md font-medium text-gray-800 mb-3 flex items-center">
-                  <MessageCircle className="w-4 h-4 mr-2 text-secondary opacity-80" />
-                  Messaging Themes
-                </h3>
-                <div className="space-y-4">
-                  {expansion.narrative_angles.messaging_themes.map((item, i) => (
-                    <motion.div 
-                      key={i} 
-                      className="p-4 bg-background rounded-lg border border-border shadow-sm"
-                      whileHover={{ x: 2, boxShadow: "0 4px 12px rgba(0, 0, 0, 0.05)" }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      {item}
-                    </motion.div>
-                  ))}
+                <div>
+                    <h3 className="text-md font-medium text-gray-800 mb-3 flex items-center">
+                    <ArrowRight className="w-4 h-4 mr-2 text-secondary opacity-80" />
+                    Key Stories
+                    </h3>
+                    <div className="space-y-4">
+                    {expansion.narrative_angles.key_stories.map((item, i) => {
+                        const isSelected = selectedItems.keyStories.has(i);
+                        
+                        return (
+                            <motion.div 
+                            key={i} 
+                            className={`p-4 rounded-lg border cursor-pointer transition-all duration-300 ${
+                                selectedItems.keyStories.has(i) 
+                                ? 'border-transparent shadow-lg font-semibold' 
+                                : 'border-border text-gray-800 shadow-md'
+                            }`}
+                            style={{
+                                color: isSelected ? colors.gradientStart : '',
+                                transform: isSelected ? 'scale(1.02)' : 'scale(1)', // Slight pop effect
+                            }}
+                            whileHover={{ y: -3, boxShadow: "0 6px 14px rgba(0, 0, 0, 0.08)" }}
+                            whileTap={{ scale: 0.96 }}
+                            transition={{ duration: 0.1, ease: [0.23, 1, 0.32, 1] }}
+                            onClick={() => toggleItemSelection('keyStories', i)}
+                            initial={false}
+                            animate={{
+                                backgroundColor: isSelected ? colors.main : 'var(--background)',
+                                borderColor: isSelected ? colors.accent : 'var(--border)',
+                                boxShadow: isSelected ? "0 6px 18px rgba(0, 0, 0, 0.12)" : "0 2px 6px rgba(0, 0, 0, 0.05)",
+                            }}
+                        >
+                            <div className="flex items-start justify-between">
+                                <span>{item}</span>
+                                {isSelected && (
+                                    <motion.div 
+                                        className="ml-2 flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center"
+                                        style={{ backgroundColor: `${colors.accent}60` }}
+                                        initial={{ scale: 0, opacity: 0 }}
+                                        animate={{ scale: 1.1, opacity: 1 }}
+                                        transition={{ duration: 0.15 }}
+                                    >
+                                        <Check className="w-3 h-3" style={{ color: colors.accent, strokeWidth: 3 }} />
+                                    </motion.div>
+                                )}
+                            </div>
+                        </motion.div> 
+                        );
+                        })}
+                    </div>
                 </div>
-              </div>
               
-              <div>
-                <h3 className="text-md font-medium text-gray-800 mb-3 flex items-center">
-                  <Users className="w-4 h-4 mr-2 text-secondary opacity-80" />
-                  Tone Guidance
-                </h3>
-                <motion.div 
-                  className="p-4 bg-background rounded-lg border border-border shadow-sm"
-                  whileHover={{ y: -2, boxShadow: "0 4px 12px rgba(0, 0, 0, 0.05)" }}
-                  transition={{ duration: 0.2 }}
-                >
-                  {expansion.narrative_angles.tone_guidance}
-                </motion.div>
-              </div>
+                <div>
+                    <h3 className="text-md font-medium text-gray-800 mb-3 flex items-center">
+                    <MessageCircle className="w-4 h-4 mr-2 text-secondary opacity-80" />
+                    Messaging Themes
+                    </h3>
+                    <div className="space-y-4">
+                    {expansion.narrative_angles.messaging_themes.map((item, i) => {
+                        const isSelected = selectedItems.messagingThemes.has(i);
+                        
+                        return (
+                            <motion.div 
+                            key={i} 
+                            className={`p-4 rounded-lg border cursor-pointer transition-all duration-300 ${
+                                selectedItems.messagingThemes.has(i) 
+                                ? 'border-transparent shadow-lg font-semibold' 
+                                : 'border-border text-gray-800 shadow-md'
+                            }`}
+                            style={{
+                                color: isSelected ? colors.gradientStart : '',
+                                transform: isSelected ? 'scale(1.02)' : 'scale(1)', // Slight pop effect
+                            }}
+                            whileHover={{ y: -3, boxShadow: "0 6px 14px rgba(0, 0, 0, 0.08)" }}
+                            whileTap={{ scale: 0.96 }}
+                            transition={{ duration: 0.1, ease: [0.23, 1, 0.32, 1] }}
+                            onClick={() => toggleItemSelection('messagingThemes', i)}
+                            initial={false}
+                            animate={{
+                                backgroundColor: isSelected ? colors.main : 'var(--background)',
+                                borderColor: isSelected ? colors.accent : 'var(--border)',
+                                boxShadow: isSelected ? "0 6px 18px rgba(0, 0, 0, 0.12)" : "0 2px 6px rgba(0, 0, 0, 0.05)",
+                            }}
+                        >
+                            <div className="flex items-start justify-between">
+                                <span>{item}</span>
+                                {isSelected && (
+                                    <motion.div 
+                                        className="ml-2 flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center"
+                                        style={{ backgroundColor: `${colors.accent}60` }}
+                                        initial={{ scale: 0, opacity: 0 }}
+                                        animate={{ scale: 1.1, opacity: 1 }}
+                                        transition={{ duration: 0.15 }}
+                                    >
+                                        <Check className="w-3 h-3" style={{ color: colors.accent, strokeWidth: 3 }} />
+                                    </motion.div>
+                                )}
+                            </div>
+                        </motion.div> 
+                        );
+                        })}
+                    </div>
+                </div>
             </motion.div>
           )}
         </AnimatePresence>
@@ -696,16 +896,49 @@ const TerritoryDetails: React.FC<TerritoryDetailsProps> = ({
                   Key Moments
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {expansion.activation_opportunities.key_moments.map((item, i) => (
-                    <motion.div 
-                      key={i} 
-                      className="p-4 bg-background rounded-lg border border-border shadow-sm"
-                      whileHover={{ y: -2, boxShadow: "0 4px 12px rgba(0, 0, 0, 0.05)" }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      {item}
-                    </motion.div>
-                  ))}
+                  {expansion.activation_opportunities.key_moments.map((item, i) => {
+                        const isSelected = selectedItems.keyMoments.has(i);
+                        
+                        return (
+                            <motion.div 
+                            key={i} 
+                            className={`p-4 rounded-lg border cursor-pointer transition-all duration-300 ${
+                                selectedItems.keyMoments.has(i) 
+                                ? 'border-transparent shadow-lg font-semibold' 
+                                : 'border-border text-gray-800 shadow-md'
+                            }`}
+                            style={{
+                                color: isSelected ? colors.gradientStart : '',
+                                transform: isSelected ? 'scale(1.02)' : 'scale(1)', // Slight pop effect
+                            }}
+                            whileHover={{ y: -3, boxShadow: "0 6px 14px rgba(0, 0, 0, 0.08)" }}
+                            whileTap={{ scale: 0.96 }}
+                            transition={{ duration: 0.1, ease: [0.23, 1, 0.32, 1] }}
+                            onClick={() => toggleItemSelection('keyMoments', i)}
+                            initial={false}
+                            animate={{
+                                backgroundColor: isSelected ? colors.main : 'var(--background)',
+                                borderColor: isSelected ? colors.accent : 'var(--border)',
+                                boxShadow: isSelected ? "0 6px 18px rgba(0, 0, 0, 0.12)" : "0 2px 6px rgba(0, 0, 0, 0.05)",
+                            }}
+                        >
+                            <div className="flex items-start justify-between">
+                                <span>{item}</span>
+                                {isSelected && (
+                                    <motion.div 
+                                        className="ml-2 flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center"
+                                        style={{ backgroundColor: `${colors.accent}60` }}
+                                        initial={{ scale: 0, opacity: 0 }}
+                                        animate={{ scale: 1.1, opacity: 1 }}
+                                        transition={{ duration: 0.15 }}
+                                    >
+                                        <Check className="w-3 h-3" style={{ color: colors.accent, strokeWidth: 3 }} />
+                                    </motion.div>
+                                )}
+                            </div>
+                        </motion.div> 
+                        );
+                        })}
                 </div>
               </div>
               
@@ -715,16 +948,49 @@ const TerritoryDetails: React.FC<TerritoryDetailsProps> = ({
                   Platform Ideas
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {expansion.activation_opportunities.platform_ideas.map((item, i) => (
-                    <motion.div 
-                      key={i} 
-                      className="p-4 bg-background rounded-lg border border-border shadow-sm"
-                      whileHover={{ y: -2, boxShadow: "0 4px 12px rgba(0, 0, 0, 0.05)" }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      {item}
-                    </motion.div>
-                  ))}
+                  {expansion.activation_opportunities.platform_ideas.map((item, i) => {
+                        const isSelected = selectedItems.platformIdeas.has(i);
+                        
+                        return (
+                            <motion.div 
+                            key={i} 
+                            className={`p-4 rounded-lg border cursor-pointer transition-all duration-300 ${
+                                selectedItems.platformIdeas.has(i) 
+                                ? 'border-transparent shadow-lg font-semibold' 
+                                : 'border-border text-gray-800 shadow-md'
+                            }`}
+                            style={{
+                                color: isSelected ? colors.gradientStart : '',
+                                transform: isSelected ? 'scale(1.02)' : 'scale(1)', // Slight pop effect
+                            }}
+                            whileHover={{ y: -3, boxShadow: "0 6px 14px rgba(0, 0, 0, 0.08)" }}
+                            whileTap={{ scale: 0.96 }}
+                            transition={{ duration: 0.1, ease: [0.23, 1, 0.32, 1] }}
+                            onClick={() => toggleItemSelection('platformIdeas', i)}
+                            initial={false}
+                            animate={{
+                                backgroundColor: isSelected ? colors.main : 'var(--background)',
+                                borderColor: isSelected ? colors.accent : 'var(--border)',
+                                boxShadow: isSelected ? "0 6px 18px rgba(0, 0, 0, 0.12)" : "0 2px 6px rgba(0, 0, 0, 0.05)",
+                            }}
+                        >
+                            <div className="flex items-start justify-between">
+                                <span>{item}</span>
+                                {isSelected && (
+                                    <motion.div 
+                                        className="ml-2 flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center"
+                                        style={{ backgroundColor: `${colors.accent}60` }}
+                                        initial={{ scale: 0, opacity: 0 }}
+                                        animate={{ scale: 1.1, opacity: 1 }}
+                                        transition={{ duration: 0.15 }}
+                                    >
+                                        <Check className="w-3 h-3" style={{ color: colors.accent, strokeWidth: 3 }} />
+                                    </motion.div>
+                                )}
+                            </div>
+                        </motion.div> 
+                        );
+                    })}
                 </div>
               </div>
               
@@ -734,16 +1000,49 @@ const TerritoryDetails: React.FC<TerritoryDetailsProps> = ({
                   Engagement Hooks
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {expansion.activation_opportunities.engagement_hooks.map((item, i) => (
-                    <motion.div 
-                      key={i} 
-                      className="p-4 bg-background rounded-lg border border-border shadow-sm"
-                      whileHover={{ y: -2, boxShadow: "0 4px 12px rgba(0, 0, 0, 0.05)" }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      {item}
-                    </motion.div>
-                  ))}
+                  {expansion.activation_opportunities.engagement_hooks.map((item, i) => {
+                        const isSelected = selectedItems.engagementHooks.has(i);
+                        
+                        return (
+                            <motion.div 
+                            key={i} 
+                            className={`p-4 rounded-lg border cursor-pointer transition-all duration-300 ${
+                                selectedItems.engagementHooks.has(i) 
+                                ? 'border-transparent shadow-lg font-semibold' 
+                                : 'border-border text-gray-800 shadow-md'
+                            }`}
+                            style={{
+                                color: isSelected ? colors.gradientStart : '',
+                                transform: isSelected ? 'scale(1.02)' : 'scale(1)', // Slight pop effect
+                            }}
+                            whileHover={{ y: -3, boxShadow: "0 6px 14px rgba(0, 0, 0, 0.08)" }}
+                            whileTap={{ scale: 0.96 }}
+                            transition={{ duration: 0.1, ease: [0.23, 1, 0.32, 1] }}
+                            onClick={() => toggleItemSelection('engagementHooks', i)}
+                            initial={false}
+                            animate={{
+                                backgroundColor: isSelected ? colors.main : 'var(--background)',
+                                borderColor: isSelected ? colors.accent : 'var(--border)',
+                                boxShadow: isSelected ? "0 6px 18px rgba(0, 0, 0, 0.12)" : "0 2px 6px rgba(0, 0, 0, 0.05)",
+                            }}
+                        >
+                            <div className="flex items-start justify-between">
+                                <span>{item}</span>
+                                {isSelected && (
+                                    <motion.div 
+                                        className="ml-2 flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center"
+                                        style={{ backgroundColor: `${colors.accent}60` }}
+                                        initial={{ scale: 0, opacity: 0 }}
+                                        animate={{ scale: 1.1, opacity: 1 }}
+                                        transition={{ duration: 0.15 }}
+                                    >
+                                        <Check className="w-3 h-3" style={{ color: colors.accent, strokeWidth: 3 }} />
+                                    </motion.div>
+                                )}
+                            </div>
+                        </motion.div> 
+                        );
+                    })}
                 </div>
               </div>
             </motion.div>
